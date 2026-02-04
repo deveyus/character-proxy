@@ -29,8 +29,8 @@
 
 ## Phase 3: API Initialization (tRPC)
 
-- [ ] Task: Install tRPC Dependencies
-  - [ ] Sub-task: Add `@trpc/server`, `@trpc/client`, and `zod` to `deno.json` imports
+- [x] Task: Install tRPC Dependencies afb6d86
+  - [x] Sub-task: Add `@trpc/server`, `@trpc/client`, and `zod` to `deno.json` imports
 - [ ] Task: Implement Health Check Endpoint
   - [ ] Sub-task: Write Tests: Create `api/test/trpc/health.test.ts`
   - [ ] Sub-task: Implement tRPC `initTRPC` builder and context
