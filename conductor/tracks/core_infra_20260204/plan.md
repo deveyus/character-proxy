@@ -17,10 +17,10 @@
 - [x] Task: Install Drizzle ORM and Drivers 1ac0546
   - [x] Sub-task: Add `drizzle-orm` and `postgres` (or `postgres.js`) dependencies to `deno.json` imports
   - [x] Sub-task: Add `drizzle-kit` as a dev dependency
-- [ ] Task: Configure Drizzle and Database Connection
-  - [ ] Sub-task: Write Tests: Create `api/test/db/connection.test.ts` expecting a successful DB ping
-  - [ ] Sub-task: Implement `api/src/db/client.ts` (Connection logic)
-  - [ ] Sub-task: Verify Tests Pass
+- [x] Task: Configure Drizzle and Database Connection f3a4ecb
+  - [x] Sub-task: Write Tests: Create `api/test/db/connection.test.ts` expecting a successful DB ping
+  - [x] Sub-task: Implement `api/src/db/client.ts` (Connection logic)
+  - [x] Sub-task: Verify Tests Pass
 - [ ] Task: Create Initial Migration Infrastructure
   - [ ] Sub-task: Create a placeholder schema file `api/src/db/schema.ts`
   - [ ] Sub-task: Run `drizzle-kit generate` to create initial migration
