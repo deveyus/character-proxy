@@ -9,7 +9,7 @@
     - [x] Sub-task: Define tasks for `dev`, `test`, `lint`, `fmt`
 - [x] Task: Verify and Update `flake.nix` for PostgreSQL support d1e57f7
     - [x] Sub-task: Ensure `postgresql` is in `buildInputs`
-    - [x] Sub-task: Add shell hook to initialize/start a local postgres DB for dev if missing- [ ] Task: Conductor - User Manual Verification 'Project Configuration' (Protocol in workflow.md)
+    - [x] Sub-task: Add shell hook to initialize/start a local postgres DB for dev if missing- [~] Task: Conductor - User Manual Verification 'Project Configuration' (Protocol in workflow.md)
 
 ## Phase 2: Database Setup (Drizzle & Postgres)
 

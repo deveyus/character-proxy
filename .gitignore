@@ -1,0 +1,13 @@
+# Nix/Direnv
+.nix/
+.direnv/
+.envrc
+
+# Deno
+cov_profile
+lcov.info
+test_cov
+
+# System
+.DS_Store
+Thumbs.db

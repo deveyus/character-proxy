@@ -3,7 +3,7 @@
 ## Guiding Principles
 
 1. **The Plan is the Source of Truth:** All work must be tracked in `plan.md`
-2. **The Tech Stack is Deliberate:** Changes to the tech stack must be documented in `tech-stack.md` *before* implementation
+2. **The Tech Stack is Deliberate:** Changes to the tech stack must be documented in `tech-stack.md` _before_ implementation
 3. **Test-Driven Development (Knowledge Encoding):** Write unit tests to encode knowledge and prevent regressions. Testing focuses on logical failures and critical edge cases rather than exhaustive line coverage.
 4. **Targeted Testing:** Aim for meaningful test coverage of core logic. A 0% global coverage requirement is set, but with an aggressive focus on "Regression Testing" for critical functionality.
 5. **User Experience First:** Every decision should prioritize user experience (and developer experience for API consumers).
@@ -45,8 +45,8 @@ All tasks follow a strict lifecycle:
    - Perform the commit.
 
 9. **Get and Record Task Commit SHA:**
-    - **Step 9.1: Update Plan:** Read `plan.md`, find the line for the completed task, update its status from `[~]` to `[x]`, and append the first 7 characters of the *just-completed commit's* commit hash.
-    - **Step 9.2: Write Plan:** Write the updated content back to `plan.md`.
+   - **Step 9.1: Update Plan:** Read `plan.md`, find the line for the completed task, update its status from `[~]` to `[x]`, and append the first 7 characters of the _just-completed commit's_ commit hash.
+   - **Step 9.2: Write Plan:** Write the updated content back to `plan.md`.
 
 10. **Commit Plan Update:**
     - **Action:** Stage the modified `plan.md` file.
@@ -56,35 +56,36 @@ All tasks follow a strict lifecycle:
 
 **Trigger:** This protocol is executed immediately after a task is completed that also concludes a phase in `plan.md`.
 
-1.  **Announce Protocol Start:** Inform the user that the phase is complete and the verification and checkpointing protocol has begun.
+1. **Announce Protocol Start:** Inform the user that the phase is complete and the verification and checkpointing protocol has begun.
 
-2.  **Verify and Create Regression Tests:**
-    -   **Step 2.1: List Changed Files:** Execute `git diff --name-only <previous_checkpoint_sha> HEAD`.
-    -   **Step 2.2: Verify Tests:** Ensure core logic in changed files is covered by regression tests.
+2. **Verify and Create Regression Tests:**
+   - **Step 2.1: List Changed Files:** Execute `git diff --name-only <previous_checkpoint_sha> HEAD`.
+   - **Step 2.2: Verify Tests:** Ensure core logic in changed files is covered by regression tests.
 
-3.  **Execute Automated Tests:**
-    -   Run the automated test suite.
-    -   If tests fail, begin debugging. (Max two attempts before asking for help).
+3. **Execute Automated Tests:**
+   - Run the automated test suite.
+   - If tests fail, begin debugging. (Max two attempts before asking for help).
 
-4.  **Propose a Detailed, Actionable Manual Verification Plan:**
-    -   Analyze `product.md`, `product-guidelines.md`, and `plan.md`.
-    -   Generate a step-by-step plan for the user to verify the changes.
+4. **Propose a Detailed, Actionable Manual Verification Plan:**
+   - Analyze `product.md`, `product-guidelines.md`, and `plan.md`.
+   - Generate a step-by-step plan for the user to verify the changes.
 
-5.  **Await Explicit User Feedback:**
-    -   Wait for user confirmation ("yes" or feedback).
+5. **Await Explicit User Feedback:**
+   - Wait for user confirmation ("yes" or feedback).
 
-6.  **Create Checkpoint Commit:**
-    -   Stage all changes and commit with `conductor(checkpoint): Checkpoint end of Phase X`.
+6. **Create Checkpoint Commit:**
+   - Stage all changes and commit with `conductor(checkpoint): Checkpoint end of Phase X`.
 
-7.  **Get and Record Phase Checkpoint SHA:**
-    -   Update `plan.md` with the checkpoint hash.
+7. **Get and Record Phase Checkpoint SHA:**
+   - Update `plan.md` with the checkpoint hash.
 
 8. **Commit Plan Update:**
-    - Commit the plan update: `conductor(plan): Mark phase '<PHASE NAME>' as complete`.
+   - Commit the plan update: `conductor(plan): Mark phase '<PHASE NAME>' as complete`.
 
 ## Development Commands (Deno)
 
 ### Setup
+
 ```bash
 # Nix will handle the environment setup.
 # Run migrations:
@@ -92,6 +93,7 @@ deno task db:migrate
 ```
 
 ### Daily Development
+
 ```bash
 # Run tests:
 deno test -A
@@ -102,6 +104,7 @@ deno fmt
 ```
 
 ### Before Committing
+
 ```bash
 deno test -A && deno lint && deno fmt --check
 ```
