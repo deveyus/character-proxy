@@ -36,7 +36,7 @@
   - [x] Sub-task: Implement tRPC `initTRPC` builder and context
   - [x] Sub-task: Implement `appRouter` with `health` procedure
   - [x] Sub-task: Verify Tests Pass
-- [ ] Task: Setup HTTP Server Entrypoint
-  - [ ] Sub-task: Implement `api/src/main.ts` to serve tRPC router
-  - [ ] Sub-task: Update `deno.json` task `dev` to run `api/src/main.ts`
+- [x] Task: Setup HTTP Server Entrypoint 3db734b
+  - [x] Sub-task: Implement `api/src/main.ts` to serve tRPC router
+  - [x] Sub-task: Update `deno.json` task `dev` to run `api/src/main.ts`
 - [ ] Task: Conductor - User Manual Verification 'API Initialization' (Protocol in workflow.md)
