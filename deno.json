@@ -1,0 +1,32 @@
+{
+  "tasks": {
+    "dev": "echo 'Run api/src/main.ts (Pending Phase 3)'",
+    "test": "deno test -A",
+    "build": "deno check api/src/main.ts",
+    "db:migrate": "echo 'Pending Phase 2'",
+    "lint": "deno lint",
+    "fmt": "deno fmt"
+  },
+  "imports": {
+    "std/": "https://deno.land/std@0.224.0/"
+  },
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+  },
+  "lint": {
+    "include": ["api/", "frontend/"],
+    "rules": {
+      "tags": ["recommended"]
+    }
+  },
+  "fmt": {
+    "include": ["api/", "frontend/", "conductor/"],
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "singleQuote": true,
+    "proseWrap": "preserve"
+  }
+}
