@@ -12,7 +12,7 @@
     - [x] Sub-task: Add shell hook to initialize/start a local postgres DB for dev if missing
 - [x] Task: Conductor - User Manual Verification 'Project Configuration' (Protocol in workflow.md) 762d240
 
-## Phase 2: Database Setup (Drizzle & Postgres)
+## [x] Phase 2: Database Setup (Drizzle & Postgres) e65d58f
 
 - [x] Task: Install Drizzle ORM and Drivers 1ac0546
   - [x] Sub-task: Add `drizzle-orm` and `postgres` (or `postgres.js`) dependencies to `deno.json` imports
@@ -25,7 +25,7 @@
   - [x] Sub-task: Create a placeholder schema file `api/src/db/schema.ts`
   - [x] Sub-task: Run `drizzle-kit generate` to create initial migration
   - [x] Sub-task: Update `deno.json` task `db:migrate`
-- [ ] Task: Conductor - User Manual Verification 'Database Setup' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Database Setup' (Protocol in workflow.md) e65d58f
 
 ## Phase 3: API Initialization (tRPC)
 
