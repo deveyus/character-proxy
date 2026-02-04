@@ -1,0 +1,42 @@
+# Implementation Plan - Core Infrastructure
+
+## [x] Phase 1: Project Configuration 762d240
+
+- [x] Task: Initialize `deno.json` with import maps and task definitions f475446
+
+    - [x] Sub-task: Create `deno.json` with strict typescript config
+
+    - [x] Sub-task: Define tasks for `dev`, `test`, `lint`, `fmt`
+- [x] Task: Verify and Update `flake.nix` for PostgreSQL support d1e57f7
+    - [x] Sub-task: Ensure `postgresql` is in `buildInputs`
+    - [x] Sub-task: Add shell hook to initialize/start a local postgres DB for dev if missing
+- [x] Task: Conductor - User Manual Verification 'Project Configuration' (Protocol in workflow.md) 762d240
+
+## [x] Phase 2: Database Setup (Drizzle & Postgres) e65d58f
+
+- [x] Task: Install Drizzle ORM and Drivers 1ac0546
+  - [x] Sub-task: Add `drizzle-orm` and `postgres` (or `postgres.js`) dependencies to `deno.json` imports
+  - [x] Sub-task: Add `drizzle-kit` as a dev dependency
+- [x] Task: Configure Drizzle and Database Connection f3a4ecb
+  - [x] Sub-task: Write Tests: Create `api/test/db/connection.test.ts` expecting a successful DB ping
+  - [x] Sub-task: Implement `api/src/db/client.ts` (Connection logic)
+  - [x] Sub-task: Verify Tests Pass
+- [x] Task: Create Initial Migration Infrastructure 264d8b7
+  - [x] Sub-task: Create a placeholder schema file `api/src/db/schema.ts`
+  - [x] Sub-task: Run `drizzle-kit generate` to create initial migration
+  - [x] Sub-task: Update `deno.json` task `db:migrate`
+- [x] Task: Conductor - User Manual Verification 'Database Setup' (Protocol in workflow.md) e65d58f
+
+## [x] Phase 3: API Initialization (tRPC) bc99ae8
+
+- [x] Task: Install tRPC Dependencies afb6d86
+  - [x] Sub-task: Add `@trpc/server`, `@trpc/client`, and `zod` to `deno.json` imports
+- [x] Task: Implement Health Check Endpoint 6382073
+  - [x] Sub-task: Write Tests: Create `api/test/trpc/health.test.ts`
+  - [x] Sub-task: Implement tRPC `initTRPC` builder and context
+  - [x] Sub-task: Implement `appRouter` with `health` procedure
+  - [x] Sub-task: Verify Tests Pass
+- [x] Task: Setup HTTP Server Entrypoint 3db734b
+  - [x] Sub-task: Implement `api/src/main.ts` to serve tRPC router
+  - [x] Sub-task: Update `deno.json` task `dev` to run `api/src/main.ts`
+- [x] Task: Conductor - User Manual Verification 'API Initialization' (Protocol in workflow.md) bc99ae8
