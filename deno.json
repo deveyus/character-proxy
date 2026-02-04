@@ -8,7 +8,11 @@
     "fmt": "deno fmt"
   },
   "imports": {
-    "std/": "https://deno.land/std@0.224.0/"
+    "std/": "https://deno.land/std@0.224.0/",
+    "drizzle-orm": "npm:drizzle-orm@^0.39.1",
+    "drizzle-orm/": "npm:/drizzle-orm@0.39.1/",
+    "postgres": "npm:postgres@^3.4.5",
+    "drizzle-kit": "npm:drizzle-kit@^0.30.4"
   },
   "compilerOptions": {
     "strict": true,
