@@ -12,7 +12,10 @@
     "drizzle-orm": "npm:drizzle-orm@^0.39.1",
     "drizzle-orm/": "npm:/drizzle-orm@0.39.1/",
     "postgres": "npm:postgres@^3.4.5",
-    "drizzle-kit": "npm:drizzle-kit@^0.30.4"
+    "drizzle-kit": "npm:drizzle-kit@^0.30.4",
+    "@trpc/server": "npm:@trpc/server@^10.45.2",
+    "@trpc/client": "npm:@trpc/client@^10.45.2",
+    "zod": "npm:zod@^3.23.8"
   },
   "compilerOptions": {
     "strict": true,
