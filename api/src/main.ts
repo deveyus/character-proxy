@@ -4,7 +4,7 @@ import { appRouter } from "./trpc/router.ts";
 import { createTRPCContext } from "./trpc/context.ts";
 import { initializeDatabase } from "./db/client.ts";
 
-const PORT = 8080;
+const PORT = 3000;
 
 /**
  * Bootstraps and starts the API server.
