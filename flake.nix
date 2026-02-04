@@ -17,7 +17,8 @@
             gemini-cli
             jq
             nodejs
-            # Add other tools here (e.g., python3) as the project evolves
+            deno
+            postgresql
           ];
 
           shellHook = ''
@@ -29,9 +30,38 @@
               echo "✅ GEMINI_API_KEY is set."
             fi
             
-            # Check for Conductor (this is a guess at the command/check)
-            echo "ℹ️  Gemini Conductor is an extension. If not installed, you may need to run an installation command or set up the specific markdown files."
-            echo "   Node.js is included if you need to install it via npm."
+            # Postgres Configuration
+            export PGDATA="$PWD/.nix/postgres_data"
+            export PGHOST="$PWD/.nix/postgres_run"
+            mkdir -p "$PGHOST"
+
+            if [ ! -d "$PGDATA" ]; then
+              echo "Initializing PostgreSQL..."
+              initdb -D "$PGDATA" --no-locale --encoding=UTF8 > /dev/null
+              echo "✅ PostgreSQL initialized."
+            fi
+
+            # Helper functions for DB management
+            start_db() {
+              pg_ctl start -l "$PGDATA/logfile" -o "-k $PGHOST"
+            }
+            stop_db() {
+              pg_ctl stop
+            }
+
+            if ! pg_ctl status > /dev/null 2>&1; then
+               echo "ℹ️  PostgreSQL is not running. Starting it now..."
+               start_db
+               # Create default db if likely first run
+               if ! psql -lqt | cut -d \| -f 1 | grep -qw "character_proxy"; then
+                  echo "Creating default database 'character_proxy'..."
+                  createdb -h "$PGHOST" character_proxy
+               fi
+            else
+               echo "✅ PostgreSQL is running."
+            fi
+
+            echo "Environment ready."
           '';
         };
       }
