@@ -3,6 +3,10 @@
 .direnv/
 .envrc
 
+# Node
+node_modules/
+package-lock.json
+
 # Deno
 cov_profile
 lcov.info

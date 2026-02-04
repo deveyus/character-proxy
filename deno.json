@@ -3,7 +3,8 @@
     "dev": "echo 'Run api/src/main.ts (Pending Phase 3)'",
     "test": "deno test -A",
     "build": "deno check api/src/main.ts",
-    "db:migrate": "echo 'Pending Phase 2'",
+    "db:generate": "deno run -A --node-modules-dir npm:drizzle-kit generate",
+    "db:migrate": "deno run -A api/src/db/migrate.ts",
     "lint": "deno lint",
     "fmt": "deno fmt"
   },
