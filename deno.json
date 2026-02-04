@@ -1,6 +1,6 @@
 {
   "tasks": {
-    "dev": "echo 'Run api/src/main.ts (Pending Phase 3)'",
+    "dev": "deno run -A --watch api/src/main.ts",
     "test": "deno test -A",
     "build": "deno check api/src/main.ts",
     "db:generate": "deno run -A --node-modules-dir npm:drizzle-kit generate",
