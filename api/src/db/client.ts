@@ -1,11 +1,11 @@
 
 import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "npm:drizzle-orm@^0.39.1/postgres-js/migrator";
 import postgres from "postgres";
+import { join, fromFileUrl, dirname } from "std/path/mod.ts";
 
 // Configuration
 const DB_NAME = "character_proxy";
-// If DATABASE_URL is set, we assume it's the full connection string.
-// Otherwise we rely on PGHOST/PGUSER defaults (e.g. from flake.nix)
 const connectionString = Deno.env.get("DATABASE_URL");
 
 // Primary client for the application
@@ -18,20 +18,24 @@ export const client = connectionString
 export const db = drizzle(client);
 
 /**
- * Checks if the target database exists and creates it if it doesn't.
+ * Ensures the database exists and all migrations are applied.
  * This should be called at application startup.
  */
-export async function ensureDatabaseExists() {
-  if (connectionString) {
-    // If a full connection string is provided, we assume the DB is managed externally
-    // or the string is sufficient. Parsing it to switch DBs is brittle.
-    return;
-  }
+export async function initializeDatabase() {
+  await ensureDatabaseExists();
+  
+  const __dirname = dirname(fromFileUrl(import.meta.url));
+  const migrationsFolder = join(__dirname, "migrations");
 
-  // Connect to default 'postgres' db to perform administrative tasks
-  const adminClient = postgres({
-    database: "postgres",
-  });
+  console.log("Checking/Running migrations...");
+  await migrate(db, { migrationsFolder });
+  console.log("Database initialized and schema up-to-date.");
+}
+
+async function ensureDatabaseExists() {
+  if (connectionString) return;
+
+  const adminClient = postgres({ database: "postgres" });
 
   try {
     const result = await adminClient`
@@ -40,9 +44,7 @@ export async function ensureDatabaseExists() {
 
     if (result.length === 0) {
       console.log(`Database '${DB_NAME}' not found. Creating...`);
-      // Cannot use parameterized query for database name in CREATE DATABASE
       await adminClient.unsafe(`CREATE DATABASE "${DB_NAME}"`);
-      console.log(`Database '${DB_NAME}' created successfully.`);
     }
   } catch (error) {
     console.error("Failed to check/create database:", error);
