@@ -6,13 +6,17 @@ Implement the data models for the three core entity types (Character, Corporatio
 ## Requirements
 
 ### 1. Database Schema
-- **Entities:**
-    - `characters`: `id` (int), `name` (text), `corporation_id` (int), `last_updated_at` (timestamp).
-    - `corporations`: `id` (int), `name` (text), `alliance_id` (int, optional), `last_updated_at` (timestamp).
-    - `alliances`: `id` (int), `name` (text), `last_updated_at` (timestamp).
-- **Historical Ledger:**
-    - `entity_history`: `id` (serial), `entity_id` (int), `entity_type` (enum: character, corporation, alliance), `data` (jsonb/text - *Note: User previously preferred SQL tables, but history needs to store the state snapshot. We will discuss if we want a generic history or type-specific history tables.*), `created_at` (timestamp).
-    - *Refinement:* We will use **type-specific history tables** or a **change-log pattern** to stick to the "avoid JSONB" constraint in the Tech Stack.
+- **Design Pattern:** 2 tables per entity (Static vs. Ephemeral). Ephemeral tables are append-only to form the historical ledger.
+- **Character Tables:**
+    - `character_static`: `id` (int, pk), `name` (text), `birthday` (timestamp).
+    - `character_ephemeral`: `id` (serial, pk), `character_id` (int, fk), `corporation_id` (int), `security_status` (float), `recorded_at` (timestamp).
+- **Corporation Tables:**
+    - `corporation_static`: `id` (int, pk), `name` (text), `ticker` (text).
+    - `corporation_ephemeral`: `id` (serial, pk), `corporation_id` (int, fk), `alliance_id` (int, optional), `member_count` (int), `recorded_at` (timestamp).
+- **Alliance Tables:**
+    - `alliance_static`: `id` (int, pk), `name` (text), `ticker` (text).
+    - `alliance_ephemeral`: `id` (serial, pk), `alliance_id` (int, fk), `executor_corp_id` (int, optional), `member_count` (int), `recorded_at` (timestamp).
+- **Constraints:** No JSONB. Use `Int` for EVE IDs.
 
 ### 2. Local Resolution Logic
 - **tRPC Procedures:**

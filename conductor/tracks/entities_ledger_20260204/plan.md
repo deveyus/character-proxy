@@ -2,11 +2,10 @@
 
 ## Phase 1: Entity & Ledger Schema
 
-- [ ] Task: Define Core Entity Tables
-    - [ ] Sub-task: Create `characters`, `corporations`, and `alliances` tables in `api/src/db/schema.ts`
-    - [ ] Sub-task: Add `entity_type` enum
-- [ ] Task: Implement History/Ledger Schema
-    - [ ] Sub-task: Design and implement non-JSONB history tracking (e.g., `character_history` table)
+- [~] Task: Define Core Entity Tables (Static & Ephemeral)
+    - [ ] Sub-task: Implement `character_static` and `character_ephemeral`
+    - [ ] Sub-task: Implement `corporation_static` and `corporation_ephemeral`
+    - [ ] Sub-task: Implement `alliance_static` and `alliance_ephemeral`
 - [ ] Task: Generate and Apply Migrations
     - [ ] Sub-task: Run `deno task db:generate`
     - [ ] Sub-task: Verify `deno task dev` applies migrations successfully
