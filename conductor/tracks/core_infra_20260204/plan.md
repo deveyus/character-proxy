@@ -31,11 +31,11 @@
 
 - [x] Task: Install tRPC Dependencies afb6d86
   - [x] Sub-task: Add `@trpc/server`, `@trpc/client`, and `zod` to `deno.json` imports
-- [ ] Task: Implement Health Check Endpoint
-  - [ ] Sub-task: Write Tests: Create `api/test/trpc/health.test.ts`
-  - [ ] Sub-task: Implement tRPC `initTRPC` builder and context
-  - [ ] Sub-task: Implement `appRouter` with `health` procedure
-  - [ ] Sub-task: Verify Tests Pass
+- [x] Task: Implement Health Check Endpoint 6382073
+  - [x] Sub-task: Write Tests: Create `api/test/trpc/health.test.ts`
+  - [x] Sub-task: Implement tRPC `initTRPC` builder and context
+  - [x] Sub-task: Implement `appRouter` with `health` procedure
+  - [x] Sub-task: Verify Tests Pass
 - [ ] Task: Setup HTTP Server Entrypoint
   - [ ] Sub-task: Implement `api/src/main.ts` to serve tRPC router
   - [ ] Sub-task: Update `deno.json` task `dev` to run `api/src/main.ts`
