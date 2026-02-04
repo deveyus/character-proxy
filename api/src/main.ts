@@ -13,7 +13,11 @@ async function startServer() {
   console.log("Starting API server...");
 
   // Initialize database (existence check and migrations)
-  await initializeDatabase();
+  const dbInit = await initializeDatabase();
+  if (dbInit.isErr()) {
+    console.error("Failed to initialize database:", dbInit.error);
+    Deno.exit(1);
+  }
 
   Deno.serve({ port: PORT }, (req) => {
     return fetchRequestHandler({

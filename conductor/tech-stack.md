@@ -4,6 +4,7 @@
 
 - **Runtime:** **Deno**. Chosen for its built-in security, modern tooling (linter, formatter, test runner), and first-class TypeScript support.
 - **Language:** **TypeScript**. Enforced strictly across the entire codebase.
+- **Error Handling:** **Result Pattern (`ts-results-es`)**. All functions that can fail must return a `Result<T, E>` or `AsyncResult<T, E>`. Use of `try-catch` blocks is discouraged in favor of explicit error propagation and functional handling.
 
 ## API & Communication
 

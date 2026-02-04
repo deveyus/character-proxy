@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "npm:drizzle-orm@^0.39.1/postgres-js/migrator";
 import postgres from "postgres";
 import { join, fromFileUrl, dirname } from "std/path/mod.ts";
+import { Ok, Err, Result } from "ts-results-es";
 
 // Configuration
 const DB_NAME = "character_proxy";
@@ -21,36 +22,50 @@ export const db = drizzle(client);
  * Ensures the database exists and all migrations are applied.
  * This should be called at application startup.
  */
-export async function initializeDatabase() {
-  await ensureDatabaseExists();
+export async function initializeDatabase(): Promise<Result<void, Error>> {
+  const dbResult = await ensureDatabaseExists();
+  if (dbResult.isErr()) return dbResult;
   
   const __dirname = dirname(fromFileUrl(import.meta.url));
   const migrationsFolder = join(__dirname, "migrations");
 
   console.log("Checking/Running migrations...");
-  await migrate(db, { migrationsFolder });
-  console.log("Database initialized and schema up-to-date.");
+  
+  try {
+    await migrate(db, { migrationsFolder });
+    console.log("Database initialized and schema up-to-date.");
+    return Ok(undefined);
+  } catch (error) {
+    return Err(error instanceof Error ? error : new Error(String(error)));
+  }
 }
 
-async function ensureDatabaseExists() {
-  if (connectionString) return;
+async function ensureDatabaseExists(): Promise<Result<void, Error>> {
+  if (connectionString) return Ok(undefined);
 
   const adminClient = postgres({ database: "postgres" });
 
-  try {
-    const result = await adminClient`
-      SELECT 1 FROM pg_database WHERE datname = ${DB_NAME}
-    `;
+  const result = await adminClient`
+    SELECT 1 FROM pg_database WHERE datname = ${DB_NAME}
+  `.then(res => Ok(res)).catch((e) => Err(e instanceof Error ? e : new Error(String(e))));
 
-    if (result.length === 0) {
-      console.log(`Database '${DB_NAME}' not found. Creating...`);
-      await adminClient.unsafe(`CREATE DATABASE "${DB_NAME}"`);
-    }
-  } catch (error) {
-    console.error("Failed to check/create database:", error);
-    throw error;
-  } finally {
+  if (result.isErr()) {
     await adminClient.end();
+    return result;
   }
+
+  if (result.value.length === 0) {
+    console.log(`Database '${DB_NAME}' not found. Creating...`);
+    const createResult = await adminClient.unsafe(`CREATE DATABASE "${DB_NAME}"`)
+      .then(res => Ok(res)).catch((e) => Err(e instanceof Error ? e : new Error(String(e))));
+    
+    if (createResult.isErr()) {
+      await adminClient.end();
+      return createResult;
+    }
+  }
+
+  await adminClient.end();
+  return Ok(undefined);
 }
 

@@ -15,7 +15,8 @@
     "drizzle-kit": "npm:drizzle-kit@^0.30.4",
     "@trpc/server": "npm:@trpc/server@^10.45.2",
     "@trpc/client": "npm:@trpc/client@^10.45.2",
-    "zod": "npm:zod@^3.23.8"
+    "zod": "npm:zod@^3.23.8",
+    "ts-results-es": "npm:ts-results-es@^4.2.0"
   },
   "compilerOptions": {
     "strict": true,
