@@ -65,3 +65,13 @@ async function ensureDatabaseExists(): Promise<Result<void, Error>> {
   await adminClient.end();
   return Ok(undefined);
 }
+
+if (import.meta.main) {
+  const result = await initializeDatabase();
+  if (result.isErr()) {
+    console.error('Migration failed:', result.error);
+    Deno.exit(1);
+  }
+  await client.end();
+  Deno.exit(0);
+}

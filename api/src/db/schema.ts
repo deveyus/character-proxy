@@ -1,49 +1,58 @@
-import { integer, pgTable, real, serial, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, pgTable, real, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 // --- Characters ---
-export const characterStatic = pgTable('character_static', {
-  id: integer('id').primaryKey(), // EVE Entity ID
-  name: text('name').notNull(),
-  birthday: timestamp('birthday').notNull(),
+export const characterStatic = pgTable("character_static", {
+  characterId: bigint("character_id", { mode: "number" }).primaryKey(), // EVE Entity ID
+  name: text("name").notNull(),
+  birthday: timestamp("birthday").notNull(),
+  gender: text("gender").notNull(),
+  raceId: bigint("race_id", { mode: "number" }).notNull(),
+  bloodlineId: bigint("bloodline_id", { mode: "number" }).notNull(),
 });
 
-export const characterEphemeral = pgTable('character_ephemeral', {
-  id: serial('id').primaryKey(),
-  characterId: integer('character_id').notNull().references(() => characterStatic.id),
-  corporationId: integer('corporation_id').notNull(),
-  securityStatus: real('security_status').notNull(),
-  recordedAt: timestamp('recorded_at').defaultNow().notNull(),
+export const characterEphemeral = pgTable("character_ephemeral", {
+  recordId: uuid("record_id").primaryKey(), // UUIDv7 generated at application level
+  characterId: bigint("character_id", { mode: "number" }).notNull().references(() => characterStatic.characterId),
+  corporationId: bigint("corporation_id", { mode: "number" }).notNull(),
+  allianceId: bigint("alliance_id", { mode: "number" }),
+  securityStatus: real("security_status").notNull(),
+  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
 });
 
 // --- Corporations ---
-export const corporationStatic = pgTable('corporation_static', {
-  id: integer('id').primaryKey(), // EVE Entity ID
-  name: text('name').notNull(),
-  ticker: text('ticker').notNull(),
+export const corporationStatic = pgTable("corporation_static", {
+  corporationId: bigint("corporation_id", { mode: "number" }).primaryKey(), // EVE Entity ID
+  name: text("name").notNull(),
+  ticker: text("ticker").notNull(),
+  dateFounded: timestamp("date_founded"),
+  creatorId: bigint("creator_id", { mode: "number" }),
+  factionId: bigint("faction_id", { mode: "number" }),
 });
 
-export const corporationEphemeral = pgTable('corporation_ephemeral', {
-  id: serial('id').primaryKey(),
-  corporationId: integer('corporation_id').notNull().references(() => corporationStatic.id),
-  allianceId: integer('alliance_id'),
-  memberCount: integer('member_count').notNull(),
-  recordedAt: timestamp('recorded_at').defaultNow().notNull(),
+export const corporationEphemeral = pgTable("corporation_ephemeral", {
+  recordId: uuid("record_id").primaryKey(), // UUIDv7
+  corporationId: bigint("corporation_id", { mode: "number" }).notNull().references(() => corporationStatic.corporationId),
+  allianceId: bigint("alliance_id", { mode: "number" }),
+  ceoId: bigint("ceo_id", { mode: "number" }).notNull(),
+  memberCount: bigint("member_count", { mode: "number" }).notNull(),
+  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
 });
 
 // --- Alliances ---
-export const allianceStatic = pgTable('alliance_static', {
-  id: integer('id').primaryKey(), // EVE Entity ID
-  name: text('name').notNull(),
-  ticker: text('ticker').notNull(),
+export const allianceStatic = pgTable("alliance_static", {
+  allianceId: bigint("alliance_id", { mode: "number" }).primaryKey(), // EVE Entity ID
+  name: text("name").notNull(),
+  ticker: text("ticker").notNull(),
+  dateFounded: timestamp("date_founded"),
+  creatorId: bigint("creator_id", { mode: "number" }).notNull(),
+  creatorCorporationId: bigint("creator_corporation_id", { mode: "number" }).notNull(),
+  factionId: bigint("faction_id", { mode: "number" }),
 });
 
-export const allianceEphemeral = pgTable('alliance_ephemeral', {
-  id: serial('id').primaryKey(),
-  allianceId: integer('alliance_id').notNull().references(() => allianceStatic.id),
-  executorCorpId: integer('executor_corp_id'),
-  memberCount: integer('member_count').notNull(),
-  recordedAt: timestamp('recorded_at').defaultNow().notNull(),
+export const allianceEphemeral = pgTable("alliance_ephemeral", {
+  recordId: uuid("record_id").primaryKey(), // UUIDv7
+  allianceId: bigint("alliance_id", { mode: "number" }).notNull().references(() => allianceStatic.allianceId),
+  executorCorpId: bigint("executor_corp_id", { mode: "number" }),
+  memberCount: bigint("member_count", { mode: "number" }).notNull(),
+  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
 });
-
-// We can remove the placeholder 'users' table or keep it if needed, but the spec focuses on these.
-// For now, I'll keep the file focused on the EVE entities.

@@ -3,12 +3,16 @@
 ## Phase 1: Entity & Ledger Schema
 
 - [x] Task: Define Core Entity Tables (Static & Ephemeral) 3e6da4d
-  - [x] Sub-task: Implement `character_static` and `character_ephemeral`
-  - [x] Sub-task: Implement `corporation_static` and `corporation_ephemeral`
-  - [x] Sub-task: Implement `alliance_static` and `alliance_ephemeral`
+  - [x] Sub-task: Implement initial `character_static` and `character_ephemeral`
+  - [x] Sub-task: Implement initial `corporation_static` and `corporation_ephemeral`
+  - [x] Sub-task: Implement initial `alliance_static` and `alliance_ephemeral`
+  - [x] Sub-task: Update tables with CEO, Founders, and additional static fields
 - [x] Task: Generate and Apply Migrations 3e6da4d
   - [x] Sub-task: Run `deno task db:generate`
   - [x] Sub-task: Verify `deno task dev` applies migrations successfully
+  - [x] Sub-task: Generate and apply migrations for updated schema
+- [~] Task: Implement NPC Corporation Hydration
+  - [ ] Sub-task: Create logic to fetch and store NPC corps from ESI
 - [ ] Task: Conductor - User Manual Verification 'Entity Schema'
 
 ## Phase 2: Local Resolution Service

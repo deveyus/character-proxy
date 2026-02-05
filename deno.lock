@@ -9,6 +9,7 @@
     "npm:drizzle-orm@~0.39.1": "0.39.1_postgres@3.4.8",
     "npm:postgres@^3.4.5": "3.4.8",
     "npm:ts-results-es@^4.2.0": "4.2.0",
+    "npm:uuidv7@^1.1.0": "1.1.0",
     "npm:zod@^3.23.8": "3.25.76"
   },
   "npm": {
@@ -416,6 +417,10 @@
     "ts-results-es@4.2.0": {
       "integrity": "sha512-GfpRk+qvHxa/6gADH8WMN/jXvs5oHYbKtMQc6X9L3VhToy5Lri3iQowyYSytaRcvPDiTT2z3vurzQZXFQFXKRA=="
     },
+    "uuidv7@1.1.0": {
+      "integrity": "sha512-2VNnOC0+XQlwogChUDzy6pe8GQEys9QFZBGOh54l6qVfwoCUwwRvk7rDTgaIsRgsF5GFa5oiNg8LqXE3jofBBg==",
+      "bin": true
+    },
     "which@4.0.0": {
       "integrity": "sha512-GlaYyEb07DPxYCKhKzplCWBJtvxZcZMrL+4UkrTSJHHPyZU4mYYTv3qaOe77H7EODLSSopAUFAc6W8U4yqvscg==",
       "dependencies": [
@@ -548,6 +553,7 @@
       "npm:drizzle-orm@~0.39.1",
       "npm:postgres@^3.4.5",
       "npm:ts-results-es@^4.2.0",
+      "npm:uuidv7@^1.1.0",
       "npm:zod@^3.23.8"
     ]
   }
