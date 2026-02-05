@@ -1,7 +1,9 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { Context } from './context.ts';
 import { z } from 'zod';
-import { getAlliance, getCharacter, getCorporation, resolveByName } from '../services/entity.ts';
+import * as characterService from '../services/character.ts';
+import * as corporationService from '../services/corporation.ts';
+import * as allianceService from '../services/alliance.ts';
 
 const t = initTRPC.context<Context>().create();
 
@@ -21,11 +23,11 @@ export const appRouter = router({
     .query(async ({ input }) => {
       let result;
       if (input.type === 'character') {
-        result = await getCharacter(input.id);
+        result = await characterService.getById(input.id);
       } else if (input.type === 'corporation') {
-        result = await getCorporation(input.id);
+        result = await corporationService.getById(input.id);
       } else {
-        result = await getAlliance(input.id);
+        result = await allianceService.getById(input.id);
       }
 
       if (result.isErr()) {
@@ -43,7 +45,15 @@ export const appRouter = router({
       type: z.enum(['character', 'corporation', 'alliance']),
     }))
     .query(async ({ input }) => {
-      const result = await resolveByName(input.name, input.type);
+      let result;
+      if (input.type === 'character') {
+        result = await characterService.getByName(input.name);
+      } else if (input.type === 'corporation') {
+        result = await corporationService.getByName(input.name);
+      } else {
+        result = await allianceService.getByName(input.name);
+      }
+
       if (result.isErr()) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

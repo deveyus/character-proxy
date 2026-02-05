@@ -1,4 +1,4 @@
-# Track: ESI Proxy & Cache Management
+# Track: Entity Type Separation & Architecture Refinement
 
 - [Specification](./spec.md)
 - [Implementation Plan](./plan.md)

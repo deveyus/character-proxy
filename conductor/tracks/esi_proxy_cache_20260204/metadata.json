@@ -1,7 +1,0 @@
-{
-  "id": "esi_proxy_cache_20260204",
-  "name": "ESI Proxy & Cache Management",
-  "description": "Implement an intelligent service layer with E-Tag caching and historical ledger updates.",
-  "status": "in-progress",
-  "priority": "high"
-}

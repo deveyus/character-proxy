@@ -4,7 +4,7 @@ import { createTRPCContext } from '../../src/trpc/context.ts';
 import { client, db, initializeDatabase } from '../../src/db/client.ts';
 import * as schema from '../../src/db/schema.ts';
 import { eq } from 'drizzle-orm';
-import { CharacterEntity } from '../../src/db/entity.ts';
+import { CharacterEntity } from '../../src/db/character.ts';
 
 Deno.test('tRPC Entity Procedures', async (t) => {
   await initializeDatabase();

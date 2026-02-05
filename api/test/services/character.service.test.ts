@@ -1,10 +1,10 @@
 import { assertEquals } from 'std/assert/mod.ts';
-import { getCharacter } from '../../src/services/entity.ts';
+import { getById } from '../../src/services/character.ts';
 import { client, db, initializeDatabase } from '../../src/db/client.ts';
 import * as schema from '../../src/db/schema.ts';
 import { eq } from 'drizzle-orm';
 
-Deno.test('Entity Service - getCharacter', async (t) => {
+Deno.test('Character Service - getById', async (t) => {
   await initializeDatabase();
   const originalFetch = globalThis.fetch;
 
@@ -35,7 +35,7 @@ Deno.test('Entity Service - getCharacter', async (t) => {
       )) as typeof fetch;
 
     // 2. Run service
-    const result = await getCharacter(charId);
+    const result = await getById(charId);
     assertEquals(result.isOk(), true);
     if (result.isOk()) {
       assertEquals(result.value?.name, 'Service Test Character');

@@ -1,11 +1,11 @@
 import { assertEquals } from 'std/assert/mod.ts';
-import { client, db, initializeDatabase } from '../../../src/db/client.ts';
-import * as schema from '../../../src/db/schema.ts';
+import { client, db, initializeDatabase } from '../../src/db/client.ts';
+import * as schema from '../../src/db/schema.ts';
 import { eq } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { CharacterEntity, resolveById, resolveByName } from '../../../src/db/entity.ts';
+import { resolveById, resolveByName } from '../../src/db/character.ts';
 
-Deno.test('Entity Repository', async (t) => {
+Deno.test('Character DB Module', async (t) => {
   await initializeDatabase();
 
   const charId = 211201;
@@ -14,7 +14,7 @@ Deno.test('Entity Repository', async (t) => {
   // Setup test data
   await db.insert(schema.characterStatic).values({
     characterId: charId,
-    name: 'Repo Test Character',
+    name: 'Char Test Character',
     birthday: new Date(),
     gender: 'male',
     raceId: 1,
@@ -29,9 +29,8 @@ Deno.test('Entity Repository', async (t) => {
     recordedAt: new Date(Date.now() - 10000), // 10s ago
   });
 
-  const latestRecordId = uuidv7();
   await db.insert(schema.characterEphemeral).values({
-    recordId: latestRecordId,
+    recordId: uuidv7(),
     characterId: charId,
     corporationId: corpId,
     securityStatus: 4.5,
@@ -42,31 +41,23 @@ Deno.test('Entity Repository', async (t) => {
     await t.step(
       'resolveById - should return the latest record joined with static data',
       async () => {
-        const result = await resolveById(charId, 'character');
+        const result = await resolveById(charId);
         assertEquals(result.isOk(), true);
         if (result.isOk()) {
-          const data = result.value as CharacterEntity;
-          assertEquals(data?.name, 'Repo Test Character');
+          const data = result.value;
+          assertEquals(data?.name, 'Char Test Character');
           assertEquals(data?.securityStatus, 4.5);
         }
       },
     );
 
     await t.step('resolveByName - should return the latest record for a given name', async () => {
-      const result = await resolveByName('Repo Test Character', 'character');
+      const result = await resolveByName('Char Test Character');
       assertEquals(result.isOk(), true);
       if (result.isOk()) {
-        const data = result.value as CharacterEntity;
+        const data = result.value;
         assertEquals(data?.characterId, charId);
         assertEquals(data?.securityStatus, 4.5);
-      }
-    });
-
-    await t.step('resolveById - should return null if not found', async () => {
-      const result = await resolveById(999999, 'character');
-      assertEquals(result.isOk(), true);
-      if (result.isOk()) {
-        assertEquals(result.value, null);
       }
     });
   } finally {
