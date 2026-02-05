@@ -3,6 +3,7 @@ import { migrate } from 'npm:drizzle-orm@^0.39.1/postgres-js/migrator';
 import postgres from 'postgres';
 import { dirname, fromFileUrl, join } from 'std/path/mod.ts';
 import { Err, Ok, Result } from 'ts-results-es';
+import { logger } from '../utils/logger.ts';
 
 // Configuration
 const DB_NAME = 'character_proxy';
@@ -26,11 +27,11 @@ export async function initializeDatabase(): Promise<Result<void, Error>> {
   const __dirname = dirname(fromFileUrl(import.meta.url));
   const migrationsFolder = join(__dirname, 'migrations');
 
-  console.log('Checking/Running migrations...');
+  logger.info('DB', 'Checking/Running migrations...');
 
   try {
     await migrate(db, { migrationsFolder });
-    console.log('Database initialized and schema up-to-date.');
+    logger.info('DB', 'Database initialized and schema up-to-date.');
     return Ok(undefined);
   } catch (error) {
     return Err(error instanceof Error ? error : new Error(String(error)));
@@ -52,7 +53,7 @@ async function ensureDatabaseExists(): Promise<Result<void, Error>> {
   }
 
   if (result.value.length === 0) {
-    console.log(`Database '${DB_NAME}' not found. Creating...`);
+    logger.info('DB', `Database '${DB_NAME}' not found. Creating...`);
     const createResult = await adminClient.unsafe(`CREATE DATABASE "${DB_NAME}"`)
       .then((res) => Ok(res)).catch((e) => Err(e instanceof Error ? e : new Error(String(e))));
 
@@ -69,7 +70,7 @@ async function ensureDatabaseExists(): Promise<Result<void, Error>> {
 if (import.meta.main) {
   const result = await initializeDatabase();
   if (result.isErr()) {
-    console.error('Migration failed:', result.error);
+    logger.error('DB', 'Migration failed', result.error);
     Deno.exit(1);
   }
   await client.end();

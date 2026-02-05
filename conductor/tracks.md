@@ -1,3 +1,4 @@
-# Project Tracks
+---
 
-This file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.
+- [~] **Track: Foundation Polishing: Logging & Hydration**
+  _Link: [./tracks/foundation_polishing_20260204/](./tracks/foundation_polishing_20260204/)_

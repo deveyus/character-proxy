@@ -1,0 +1,7 @@
+{
+  "id": "foundation_polishing_20260204",
+  "name": "Foundation Polishing: Logging & Hydration",
+  "description": "Clean up technical debt in hydration and implement structured logging category tags.",
+  "status": "todo",
+  "priority": "medium"
+}

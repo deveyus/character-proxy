@@ -1,4 +1,4 @@
-# Track: Resilient Freshness & Rate Management
+# Track: Foundation Polishing: Logging & Hydration
 
 - [Specification](./spec.md)
 - [Implementation Plan](./plan.md)

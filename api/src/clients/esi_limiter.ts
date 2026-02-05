@@ -1,6 +1,7 @@
+import { logger } from '../utils/logger.ts';
+
 /**
  * Global state for tracking ESI error limits.
- * ESI allows 100 errors per minute per IP.
  */
 let errorLimitRemain = 100;
 let errorLimitReset = 60; // seconds until reset
@@ -45,7 +46,8 @@ export function canFetch(priority: FetchPriority = 'user'): boolean {
     return true;
   }
 
-  console.warn(
+  logger.warn(
+    'ESI',
     `ESI Rate Limit Active [${priority}]: ${errorLimitRemain} remaining, reset in ${errorLimitReset}s`,
   );
   return false;

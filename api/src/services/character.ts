@@ -2,6 +2,7 @@ import { Err, Ok, Result } from 'ts-results-es';
 import * as db from '../db/character.ts';
 import { fetchEntity } from '../clients/esi.ts';
 import { FetchPriority } from '../clients/esi_limiter.ts';
+import { logger } from '../utils/logger.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 
 interface ESICharacter {
@@ -39,7 +40,7 @@ export async function getById(
       );
 
       if (esiRes.status === 'fresh') {
-        // 200 OK
+        // 4a. 200 OK - Update static and append to ledger
         const updateStatic = await db.upsertStatic({
           characterId: id,
           name: esiRes.data.name,
@@ -108,7 +109,10 @@ export async function getById(
           });
         }
         if (localEntity) {
-          console.warn(`ESI fetch failed for character ${id}, serving stale data:`, esiRes.error);
+          logger.warn(
+            'ESI',
+            `ESI fetch failed for character ${id}, serving stale data: ${esiRes.error.message}`,
+          );
           return Ok({
             data: localEntity,
             metadata: {
