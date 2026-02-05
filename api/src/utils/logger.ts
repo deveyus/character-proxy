@@ -1,25 +1,76 @@
+import * as log from 'std/log/mod.ts';
+
 export type LogTag = 'ESI' | 'DB' | 'CACHE' | 'SYSTEM';
 
-function formatMessage(tag: LogTag, message: string): string {
-  const timestamp = new Date().toISOString();
-  return `[${timestamp}] [${tag}] ${message}`;
+/**
+ * Custom formatter for OTel-ready JSON logs.
+ */
+function jsonFormatter(record: log.LogRecord): string {
+  return JSON.stringify({
+    timestamp: record.datetime.toISOString(),
+    level: record.levelName,
+    tag: record.loggerName,
+    message: record.msg,
+    // Include any extra arguments as attributes
+    ...(record.args.length > 0 ? { attributes: record.args } : {}),
+  });
 }
 
+/**
+ * Custom formatter for human-readable pretty logs.
+ */
+function prettyFormatter(record: log.LogRecord): string {
+  let msg =
+    `[${record.datetime.toISOString()}] [${record.levelName}] [${record.loggerName}] ${record.msg}`;
+  if (record.args.length > 0) {
+    msg += ` | attributes: ${JSON.stringify(record.args)}`;
+  }
+  return msg;
+}
+
+const logFormat = Deno.env.get('LOG_FORMAT') || 'pretty';
+
+/**
+ * Initializes the global logging system.
+ */
+export async function setupLogger() {
+  await log.setup({
+    handlers: {
+      console: new log.ConsoleHandler('DEBUG', {
+        formatter: logFormat === 'json' ? jsonFormatter : prettyFormatter,
+      }),
+    },
+    loggers: {
+      default: {
+        level: 'INFO',
+        handlers: ['console'],
+      },
+      ESI: {
+        level: 'DEBUG',
+        handlers: ['console'],
+      },
+      DB: {
+        level: 'INFO',
+        handlers: ['console'],
+      },
+      CACHE: {
+        level: 'INFO',
+        handlers: ['console'],
+      },
+      SYSTEM: {
+        level: 'INFO',
+        handlers: ['console'],
+      },
+    },
+  });
+}
+
+/**
+ * Typed logger wrapper to maintain consistent usage.
+ */
 export const logger = {
-  info: (tag: LogTag, message: string) => {
-    console.log(formatMessage(tag, message));
-  },
-  warn: (tag: LogTag, message: string) => {
-    console.warn(formatMessage(tag, message));
-  },
-  error: (tag: LogTag, message: string, error?: Error) => {
-    console.error(formatMessage(tag, message));
-    if (error) {
-      console.error(error);
-    }
-  },
-  debug: (tag: LogTag, message: string) => {
-    // We could hide debug logs based on an env var if needed
-    console.debug(formatMessage(tag, message));
-  },
+  info: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).info(msg, ...args),
+  warn: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).warn(msg, ...args),
+  error: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).error(msg, ...args),
+  debug: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).debug(msg, ...args),
 };
