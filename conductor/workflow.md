@@ -10,8 +10,8 @@
    - **Real Integration:** Test against real (or containerized) dependencies where possible for critical paths.
    - **Fakes over Mocks:** Use robust "fake" implementations of internal interfaces rather than ad-hoc mocks of global globals.
 5. **Targeted Testing:** Aim for meaningful test coverage of core logic. A 0% global coverage requirement is set, but with an aggressive focus on "Regression Testing" for critical functionality.
-5. **User Experience First:** Every decision should prioritize user experience (and developer experience for API consumers).
-6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
+6. **User Experience First:** Every decision should prioritize user experience (and developer experience for API consumers).
+7. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
 
 ## Task Workflow
 
