@@ -1,5 +1,5 @@
-import { db } from '../client.ts';
-import * as schema from '../schema.ts';
+import { db } from './client.ts';
+import * as schema from './schema.ts';
 import { desc, eq } from 'drizzle-orm';
 import { Err, Ok, Result } from 'ts-results-es';
 

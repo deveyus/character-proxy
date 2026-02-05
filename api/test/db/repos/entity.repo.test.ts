@@ -3,7 +3,7 @@ import { client, db, initializeDatabase } from '../../../src/db/client.ts';
 import * as schema from '../../../src/db/schema.ts';
 import { eq } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { CharacterEntity, resolveById, resolveByName } from '../../../src/db/repos/entity.repo.ts';
+import { CharacterEntity, resolveById, resolveByName } from '../../../src/db/entity.ts';
 
 Deno.test('Entity Repository', async (t) => {
   await initializeDatabase();

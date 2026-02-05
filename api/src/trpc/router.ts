@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { Context } from './context.ts';
 import { z } from 'zod';
-import { resolveById, resolveByName } from '../db/repos/entity.repo.ts';
+import { resolveById, resolveByName } from '../db/entity.ts';
 
 const t = initTRPC.context<Context>().create();
 
