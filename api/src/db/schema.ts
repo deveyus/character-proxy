@@ -8,6 +8,9 @@ export const characterStatic = pgTable('character_static', {
   gender: text('gender').notNull(),
   raceId: bigint('race_id', { mode: 'number' }).notNull(),
   bloodlineId: bigint('bloodline_id', { mode: 'number' }).notNull(),
+  etag: text('etag'),
+  expiresAt: timestamp('expires_at'),
+  lastModifiedAt: timestamp('last_modified_at'),
 });
 
 export const characterEphemeral = pgTable('character_ephemeral', {
@@ -29,6 +32,9 @@ export const corporationStatic = pgTable('corporation_static', {
   dateFounded: timestamp('date_founded'),
   creatorId: bigint('creator_id', { mode: 'number' }),
   factionId: bigint('faction_id', { mode: 'number' }),
+  etag: text('etag'),
+  expiresAt: timestamp('expires_at'),
+  lastModifiedAt: timestamp('last_modified_at'),
 });
 
 export const corporationEphemeral = pgTable('corporation_ephemeral', {
@@ -51,6 +57,9 @@ export const allianceStatic = pgTable('alliance_static', {
   creatorId: bigint('creator_id', { mode: 'number' }).notNull(),
   creatorCorporationId: bigint('creator_corporation_id', { mode: 'number' }).notNull(),
   factionId: bigint('faction_id', { mode: 'number' }),
+  etag: text('etag'),
+  expiresAt: timestamp('expires_at'),
+  lastModifiedAt: timestamp('last_modified_at'),
 });
 
 export const allianceEphemeral = pgTable('alliance_ephemeral', {

@@ -2,10 +2,10 @@
 
 ## Phase 1: Persistence Refactor & Schema Update
 
-- [~] Task: Rename and Refactor DB Layer
-  - [ ] Sub-task: Move `api/src/db/repos/entity.repo.ts` to `api/src/db/entity.ts`
-  - [ ] Sub-task: Update all imports and verify tests pass
-- [ ] Task: Update Schema with Cache Metadata
+- [x] Task: Rename and Refactor DB Layer acb3e51
+  - [x] Sub-task: Move `api/src/db/repos/entity.repo.ts` to `api/src/db/entity.ts`
+  - [x] Sub-task: Update all imports and verify tests pass
+- [~] Task: Update Schema with Cache Metadata
   - [ ] Sub-task: Add `etag`, `expiresAt`, `lastModifiedAt` to static tables in `schema.ts`
   - [ ] Sub-task: Generate and apply migrations
 - [ ] Task: Update DB functions to handle new fields

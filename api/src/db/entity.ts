@@ -2,6 +2,7 @@ import { db } from './client.ts';
 import * as schema from './schema.ts';
 import { desc, eq } from 'drizzle-orm';
 import { Err, Ok, Result } from 'ts-results-es';
+import { uuidv7 } from 'uuidv7';
 
 export type EntityType = 'character' | 'corporation' | 'alliance';
 
@@ -136,6 +137,84 @@ export async function resolveByName(
     } else {
       return Ok({ ...row.alliance_static, ...row.alliance_ephemeral } as Entity);
     }
+  } catch (error) {
+    return Err(error instanceof Error ? error : new Error(String(error)));
+  }
+}
+
+/**
+ * Upserts the static data and cache headers for an entity.
+ */
+export async function upsertStatic(
+  type: EntityType,
+  values:
+    | typeof schema.characterStatic.$inferInsert
+    | typeof schema.corporationStatic.$inferInsert
+    | typeof schema.allianceStatic.$inferInsert,
+): Promise<Result<void, Error>> {
+  try {
+    if (type === 'character') {
+      await db.insert(schema.characterStatic)
+        .values(values as typeof schema.characterStatic.$inferInsert)
+        .onConflictDoUpdate({
+          target: schema.characterStatic.characterId,
+          set: values as typeof schema.characterStatic.$inferInsert,
+        });
+    } else if (type === 'corporation') {
+      await db.insert(schema.corporationStatic)
+        .values(values as typeof schema.corporationStatic.$inferInsert)
+        .onConflictDoUpdate({
+          target: schema.corporationStatic.corporationId,
+          set: values as typeof schema.corporationStatic.$inferInsert,
+        });
+    } else {
+      await db.insert(schema.allianceStatic)
+        .values(values as typeof schema.allianceStatic.$inferInsert)
+        .onConflictDoUpdate({
+          target: schema.allianceStatic.allianceId,
+          set: values as typeof schema.allianceStatic.$inferInsert,
+        });
+    }
+    return Ok(void 0);
+  } catch (error) {
+    return Err(error instanceof Error ? error : new Error(String(error)));
+  }
+}
+
+/**
+ * Appends a new ephemeral record to the historical ledger.
+ */
+export async function appendEphemeral(
+  type: EntityType,
+  values:
+    | Omit<typeof schema.characterEphemeral.$inferInsert, 'recordId' | 'recordedAt'>
+    | Omit<typeof schema.corporationEphemeral.$inferInsert, 'recordId' | 'recordedAt'>
+    | Omit<typeof schema.allianceEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
+): Promise<Result<void, Error>> {
+  try {
+    const recordId = uuidv7();
+    const recordedAt = new Date();
+
+    if (type === 'character') {
+      await db.insert(schema.characterEphemeral).values({
+        ...(values as typeof schema.characterEphemeral.$inferInsert),
+        recordId,
+        recordedAt,
+      });
+    } else if (type === 'corporation') {
+      await db.insert(schema.corporationEphemeral).values({
+        ...(values as typeof schema.corporationEphemeral.$inferInsert),
+        recordId,
+        recordedAt,
+      });
+    } else {
+      await db.insert(schema.allianceEphemeral).values({
+        ...(values as typeof schema.allianceEphemeral.$inferInsert),
+        recordId,
+        recordedAt,
+      });
+    }
+    return Ok(void 0);
   } catch (error) {
     return Err(error instanceof Error ? error : new Error(String(error)));
   }

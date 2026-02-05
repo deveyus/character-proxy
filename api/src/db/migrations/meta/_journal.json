@@ -8,6 +8,13 @@
       "when": 1770255123135,
       "tag": "0000_mysterious_supreme_intelligence",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770273474562,
+      "tag": "0001_cool_major_mapleleaf",
+      "breakpoints": true
     }
   ]
 }
