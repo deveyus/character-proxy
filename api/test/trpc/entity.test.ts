@@ -31,7 +31,12 @@ Deno.test('tRPC Entity Procedures', async (t) => {
           }),
           {
             status: 200,
-            headers: { 'etag': '"abc"', 'expires': new Date(Date.now() + 60000).toUTCString() },
+            headers: {
+              'etag': '"abc"',
+              'expires': new Date(Date.now() + 60000).toUTCString(),
+              'x-esi-error-limit-remain': '100',
+              'x-esi-error-limit-reset': '60',
+            },
           },
         ),
       );
@@ -44,20 +49,22 @@ Deno.test('tRPC Entity Procedures', async (t) => {
 
   try {
     await t.step('resolveById - should return entity via tRPC', async () => {
-      const entity = await caller.resolveById({ id: charId, type: 'character' });
-      assertEquals(entity?.name, name);
-      assertEquals((entity as CharacterEntity)?.characterId, charId);
+      const response = await caller.resolveById({ id: charId, type: 'character' });
+      assertEquals(response.data?.name, name);
+      assertEquals((response.data as CharacterEntity)?.characterId, charId);
+      assertEquals(response.metadata.source, 'fresh');
     });
 
     await t.step('resolveByName - should return entity via tRPC', async () => {
-      const entity = await caller.resolveByName({ name: name, type: 'character' });
-      assertEquals(entity?.name, name);
-      assertEquals((entity as CharacterEntity)?.characterId, charId);
+      const response = await caller.resolveByName({ name: name, type: 'character' });
+      assertEquals(response.data?.name, name);
+      assertEquals((response.data as CharacterEntity)?.characterId, charId);
     });
 
     await t.step('resolveById - should return null for non-existent', async () => {
-      const entity = await caller.resolveById({ id: 999999, type: 'character' });
-      assertEquals(entity, null);
+      const response = await caller.resolveById({ id: 999999, type: 'character' });
+      assertEquals(response.data, null);
+      assertEquals(response.metadata.source, 'stale');
     });
   } finally {
     globalThis.fetch = originalFetch;

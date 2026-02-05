@@ -1,4 +1,4 @@
-# Track: Entity Type Separation & Architecture Refinement
+# Track: Resilient Freshness & Rate Management
 
 - [Specification](./spec.md)
 - [Implementation Plan](./plan.md)

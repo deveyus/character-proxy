@@ -19,15 +19,16 @@ export const appRouter = router({
     .input(z.object({
       id: z.number(),
       type: z.enum(['character', 'corporation', 'alliance']),
+      maxAge: z.number().optional(),
     }))
     .query(async ({ input }) => {
       let result;
       if (input.type === 'character') {
-        result = await characterService.getById(input.id);
+        result = await characterService.getById(input.id, input.maxAge);
       } else if (input.type === 'corporation') {
-        result = await corporationService.getById(input.id);
+        result = await corporationService.getById(input.id, input.maxAge);
       } else {
-        result = await allianceService.getById(input.id);
+        result = await allianceService.getById(input.id, input.maxAge);
       }
 
       if (result.isErr()) {
@@ -43,15 +44,16 @@ export const appRouter = router({
     .input(z.object({
       name: z.string(),
       type: z.enum(['character', 'corporation', 'alliance']),
+      maxAge: z.number().optional(),
     }))
     .query(async ({ input }) => {
       let result;
       if (input.type === 'character') {
-        result = await characterService.getByName(input.name);
+        result = await characterService.getByName(input.name, input.maxAge);
       } else if (input.type === 'corporation') {
-        result = await corporationService.getByName(input.name);
+        result = await corporationService.getByName(input.name, input.maxAge);
       } else {
-        result = await allianceService.getByName(input.name);
+        result = await allianceService.getByName(input.name, input.maxAge);
       }
 
       if (result.isErr()) {

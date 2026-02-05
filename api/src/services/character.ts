@@ -1,6 +1,7 @@
 import { Err, Ok, Result } from 'ts-results-es';
 import * as db from '../db/character.ts';
 import { fetchEntity } from '../clients/esi.ts';
+import { ServiceResponse, shouldFetch } from './utils.ts';
 
 interface ESICharacter {
   name: string;
@@ -18,24 +19,21 @@ interface ESICharacter {
  */
 export async function getById(
   id: number,
-): Promise<Result<db.CharacterEntity | null, Error>> {
+  maxAge?: number,
+): Promise<Result<ServiceResponse<db.CharacterEntity>, Error>> {
   try {
     // 1. Check local DB
     const localResult = await db.resolveById(id);
     if (localResult.isErr()) return localResult;
 
-    const localEntity = localResult.value;
+    let localEntity = localResult.value;
 
-    // 2. Determine if we need to fetch from ESI
-    const now = new Date();
-    const isExpired = localEntity?.expiresAt ? localEntity.expiresAt < now : true;
-
-    if (!localEntity || isExpired) {
-      // 3. Fetch from ESI
+    // 2. Decide if we fetch
+    if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
       const esiRes = await fetchEntity<ESICharacter>(`/characters/${id}/`, localEntity?.etag);
 
       if (esiRes.status === 'fresh') {
-        // 4a. 200 OK - Update static and append to ledger
+        // 200 OK
         const updateStatic = await db.upsertStatic({
           characterId: id,
           name: esiRes.data.name,
@@ -49,61 +47,118 @@ export async function getById(
         });
         if (updateStatic.isErr()) return updateStatic;
 
-        const appendLedger = await db.appendEphemeral({
+        await db.appendEphemeral({
           characterId: id,
           corporationId: esiRes.data.corporation_id,
           allianceId: esiRes.data.alliance_id || null,
           securityStatus: esiRes.data.security_status,
         });
-        if (appendLedger.isErr()) return appendLedger;
 
-        // Return updated record
-        return db.resolveById(id);
-      } else if (esiRes.status === 'not_modified') {
-        // 4b. 304 Not Modified - Update expiry only
+        const refreshed = await db.resolveById(id);
+        if (refreshed.isErr()) return refreshed;
+        localEntity = refreshed.value;
+
         if (localEntity) {
-          const updateExpiry = await db.upsertStatic({
-            ...localEntity,
-            expiresAt: esiRes.expiresAt,
-            lastModifiedAt: new Date(),
+          return Ok({
+            data: localEntity,
+            metadata: {
+              source: 'fresh',
+              expiresAt: localEntity.expiresAt!,
+              lastModifiedAt: localEntity.lastModifiedAt!,
+            },
           });
-          if (updateExpiry.isErr()) return updateExpiry;
+        }
+      } else if (esiRes.status === 'not_modified' && localEntity) {
+        // 304 Not Modified
+        await db.upsertStatic({
+          ...localEntity,
+          expiresAt: esiRes.expiresAt,
+          lastModifiedAt: new Date(),
+        });
+        const refreshed = await db.resolveById(id);
+        if (refreshed.isErr()) return refreshed;
+        localEntity = refreshed.value;
 
-          return db.resolveById(id);
+        if (localEntity) {
+          return Ok({
+            data: localEntity,
+            metadata: {
+              source: 'cache',
+              expiresAt: localEntity.expiresAt!,
+              lastModifiedAt: localEntity.lastModifiedAt!,
+            },
+          });
         }
       } else if (esiRes.status === 'error') {
+        // Fallback to stale
         if (esiRes.error.message.includes('404')) {
-          return Ok(null);
+          return Ok({
+            data: null,
+            metadata: {
+              source: 'stale',
+              expiresAt: new Date(0),
+              lastModifiedAt: new Date(0),
+            },
+          });
         }
         if (localEntity) {
-          console.warn(`ESI fetch failed for character ${id}, serving stale data:`, esiRes.error);
-          return Ok(localEntity);
+          return Ok({
+            data: localEntity,
+            metadata: {
+              source: 'stale',
+              expiresAt: localEntity.expiresAt!,
+              lastModifiedAt: localEntity.lastModifiedAt!,
+            },
+          });
         }
         return Err(esiRes.error);
       }
     }
 
-    return Ok(localEntity);
+    // Default: return from cache
+    if (localEntity) {
+      return Ok({
+        data: localEntity,
+        metadata: {
+          source: 'cache',
+          expiresAt: localEntity.expiresAt!,
+          lastModifiedAt: localEntity.lastModifiedAt!,
+        },
+      });
+    }
+
+    return Ok({
+      data: null,
+      metadata: {
+        source: 'stale',
+        expiresAt: new Date(0),
+        lastModifiedAt: new Date(0),
+      },
+    });
   } catch (error) {
     return Err(error instanceof Error ? error : new Error(String(error)));
   }
 }
 
 /**
- * Resolves a character by its name, checking local cache first.
+ * Resolves a character by its name.
  */
 export async function getByName(
   name: string,
-): Promise<Result<db.CharacterEntity | null, Error>> {
+  maxAge?: number,
+): Promise<Result<ServiceResponse<db.CharacterEntity>, Error>> {
   try {
     const localResult = await db.resolveByName(name);
     if (localResult.isErr()) return localResult;
 
     if (localResult.value) {
-      return getById(localResult.value.characterId);
+      return getById(localResult.value.characterId, maxAge);
     }
 
-    return Ok(null);
+    return Ok({
+      data: null,
+      metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },
+    });
   } catch (error) {
     return Err(error instanceof Error ? error : new Error(String(error)));
   }

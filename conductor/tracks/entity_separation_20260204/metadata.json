@@ -1,7 +1,0 @@
-{
-  "id": "entity_separation_20260204",
-  "name": "Entity Type Separation & Architecture Refinement",
-  "description": "Decompose polymorphic entity logic into specialized, type-safe modules for characters, corporations, and alliances.",
-  "status": "todo",
-  "priority": "medium"
-}

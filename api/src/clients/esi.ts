@@ -1,5 +1,4 @@
-// No imports needed for now if we don't use Result here, but we might need types later.
-// For now let's just remove the unused line.
+import { canFetch, updateLimits } from './esi_limiter.ts';
 
 export type ESIResponse<T> =
   | { status: 'fresh'; data: T; etag: string; expiresAt: Date }
@@ -9,12 +8,19 @@ export type ESIResponse<T> =
 const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
 /**
- * Fetches an entity from ESI with E-Tag support.
+ * Fetches an entity from ESI with E-Tag support and rate limit awareness.
  */
 export async function fetchEntity<T>(
   path: string,
   etag?: string | null,
 ): Promise<ESIResponse<T>> {
+  if (!canFetch()) {
+    return {
+      status: 'error',
+      error: new Error('Rate limit circuit breaker active. Local cache only.'),
+    };
+  }
+
   try {
     const headers: Record<string, string> = {};
     if (etag) {
@@ -22,6 +28,13 @@ export async function fetchEntity<T>(
     }
 
     const response = await fetch(`${ESI_BASE_URL}${path}`, { headers });
+
+    // Update limits from headers
+    const remain = response.headers.get('x-esi-error-limit-remain');
+    const reset = response.headers.get('x-esi-error-limit-reset');
+    if (remain && reset) {
+      updateLimits(parseInt(remain), parseInt(reset));
+    }
 
     const expiresHeader = response.headers.get('expires');
     const expiresAt = expiresHeader ? new Date(expiresHeader) : new Date(Date.now() + 60000);

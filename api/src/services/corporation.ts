@@ -1,6 +1,7 @@
 import { Err, Ok, Result } from 'ts-results-es';
 import * as db from '../db/corporation.ts';
 import { fetchEntity } from '../clients/esi.ts';
+import { ServiceResponse, shouldFetch } from './utils.ts';
 
 interface ESICorporation {
   name: string;
@@ -14,25 +15,22 @@ interface ESICorporation {
 }
 
 /**
- * Gets a corporation by ID, using local cache or fetching from ESI.
+ * Gets a corporation by ID.
  */
 export async function getById(
   id: number,
-): Promise<Result<db.CorporationEntity | null, Error>> {
+  maxAge?: number,
+): Promise<Result<ServiceResponse<db.CorporationEntity>, Error>> {
   try {
     const localResult = await db.resolveById(id);
     if (localResult.isErr()) return localResult;
+    let localEntity = localResult.value;
 
-    const localEntity = localResult.value;
-
-    const now = new Date();
-    const isExpired = localEntity?.expiresAt ? localEntity.expiresAt < now : true;
-
-    if (!localEntity || isExpired) {
+    if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
       const esiRes = await fetchEntity<ESICorporation>(`/corporations/${id}/`, localEntity?.etag);
 
       if (esiRes.status === 'fresh') {
-        const updateStatic = await db.upsertStatic({
+        await db.upsertStatic({
           corporationId: id,
           name: esiRes.data.name,
           ticker: esiRes.data.ticker,
@@ -43,32 +41,82 @@ export async function getById(
           expiresAt: esiRes.expiresAt,
           lastModifiedAt: new Date(),
         });
-        if (updateStatic.isErr()) return updateStatic;
 
-        const appendLedger = await db.appendEphemeral({
+        await db.appendEphemeral({
           corporationId: id,
           allianceId: esiRes.data.alliance_id || null,
           ceoId: esiRes.data.ceo_id,
           memberCount: esiRes.data.member_count,
         });
-        if (appendLedger.isErr()) return appendLedger;
 
-        return db.resolveById(id);
+        const refreshed = await db.resolveById(id);
+        if (refreshed.isErr()) return refreshed;
+        localEntity = refreshed.value;
+        if (localEntity) {
+          return Ok({
+            data: localEntity,
+            metadata: {
+              source: 'fresh',
+              expiresAt: localEntity.expiresAt!,
+              lastModifiedAt: localEntity.lastModifiedAt!,
+            },
+          });
+        }
       } else if (esiRes.status === 'not_modified' && localEntity) {
-        const updateExpiry = await db.upsertStatic({
+        await db.upsertStatic({
           ...localEntity,
           expiresAt: esiRes.expiresAt,
           lastModifiedAt: new Date(),
         });
-        if (updateExpiry.isErr()) return updateExpiry;
-        return db.resolveById(id);
+        const refreshed = await db.resolveById(id);
+        if (refreshed.isErr()) return refreshed;
+        localEntity = refreshed.value;
+        if (localEntity) {
+          return Ok({
+            data: localEntity,
+            metadata: {
+              source: 'cache',
+              expiresAt: localEntity.expiresAt!,
+              lastModifiedAt: localEntity.lastModifiedAt!,
+            },
+          });
+        }
       } else if (esiRes.status === 'error') {
-        if (esiRes.error.message.includes('404')) return Ok(null);
-        if (localEntity) return Ok(localEntity);
+        if (esiRes.error.message.includes('404')) {
+          return Ok({
+            data: null,
+            metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },
+          });
+        }
+        if (localEntity) {
+          return Ok({
+            data: localEntity,
+            metadata: {
+              source: 'stale',
+              expiresAt: localEntity.expiresAt!,
+              lastModifiedAt: localEntity.lastModifiedAt!,
+            },
+          });
+        }
         return Err(esiRes.error);
       }
     }
-    return Ok(localEntity);
+
+    if (localEntity) {
+      return Ok({
+        data: localEntity,
+        metadata: {
+          source: 'cache',
+          expiresAt: localEntity.expiresAt!,
+          lastModifiedAt: localEntity.lastModifiedAt!,
+        },
+      });
+    }
+
+    return Ok({
+      data: null,
+      metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },
+    });
   } catch (error) {
     return Err(error instanceof Error ? error : new Error(String(error)));
   }
@@ -79,16 +127,16 @@ export async function getById(
  */
 export async function getByName(
   name: string,
-): Promise<Result<db.CorporationEntity | null, Error>> {
+  maxAge?: number,
+): Promise<Result<ServiceResponse<db.CorporationEntity>, Error>> {
   try {
     const localResult = await db.resolveByName(name);
     if (localResult.isErr()) return localResult;
-
-    if (localResult.value) {
-      return getById(localResult.value.corporationId);
-    }
-
-    return Ok(null);
+    if (localResult.value) return getById(localResult.value.corporationId, maxAge);
+    return Ok({
+      data: null,
+      metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },
+    });
   } catch (error) {
     return Err(error instanceof Error ? error : new Error(String(error)));
   }

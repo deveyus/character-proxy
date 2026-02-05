@@ -29,6 +29,8 @@ Deno.test('Character Service - getById', async (t) => {
             headers: {
               'etag': '"service-abc"',
               'expires': new Date(Date.now() + 60000).toUTCString(),
+              'x-esi-error-limit-remain': '100',
+              'x-esi-error-limit-reset': '60',
             },
           },
         ),
@@ -38,8 +40,9 @@ Deno.test('Character Service - getById', async (t) => {
     const result = await getById(charId);
     assertEquals(result.isOk(), true);
     if (result.isOk()) {
-      assertEquals(result.value?.name, 'Service Test Character');
-      assertEquals(result.value?.etag, '"service-abc"');
+      assertEquals(result.value.data?.name, 'Service Test Character');
+      assertEquals(result.value.data?.etag, '"service-abc"');
+      assertEquals(result.value.metadata.source, 'fresh');
     }
 
     // 3. Verify DB
