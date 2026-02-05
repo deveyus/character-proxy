@@ -19,10 +19,10 @@
 
 ## Phase 3: Intelligent Service Layer
 
-- [~] Task: Implement Entity Service
-  - [ ] Sub-task: Create `api/src/services/entity.ts` with `getCharacter`, `getCorporation`, `getAlliance`
-  - [ ] Sub-task: Implement the "Smart Cache" logic (Check DB -> Call ESI -> Update Ledger)
-- [ ] Task: Integrate with tRPC Router
-  - [ ] Sub-task: Update `router.ts` to call Service functions instead of DB functions directly
-- [ ] Task: Integration Test for Proxy Logic
-  - [ ] Sub-task: Create `api/test/services/entity.service.test.ts` to verify cache logic
+- [x] Task: Implement Entity Service 782a55a
+  - [x] Sub-task: Create `api/src/services/entity.ts` with `getCharacter`, `getCorporation`, `getAlliance`
+  - [x] Sub-task: Implement the "Smart Cache" logic (Check DB -> Call ESI -> Update Ledger)
+- [x] Task: Integrate with tRPC Router 782a55a
+  - [x] Sub-task: Update `router.ts` to call Service functions instead of DB functions directly
+- [x] Task: Integration Test for Proxy Logic 782a55a
+  - [x] Sub-task: Create `api/test/services/entity.service.test.ts` to verify cache logic
