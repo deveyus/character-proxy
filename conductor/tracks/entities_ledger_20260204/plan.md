@@ -13,7 +13,7 @@
   - [x] Sub-task: Generate and apply migrations for updated schema
 - [x] Task: Implement NPC Corporation Hydration e38a566
   - [x] Sub-task: Create logic to fetch and store NPC corps from ESI
-- [ ] Task: Conductor - User Manual Verification 'Entity Schema'
+- [x] Task: Conductor - User Manual Verification 'Entity Schema' 47fe6c2
 
 ## Phase 2: Local Resolution Service
 
