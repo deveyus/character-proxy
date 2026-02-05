@@ -16,8 +16,8 @@
 
 ## Phase 3: tRPC & Metadata
 
-- [~] Task: Update tRPC Schemas
-  - [ ] Sub-task: Add `maxAge` to Zod inputs
-  - [ ] Sub-task: Implement the enriched response wrapper in `router.ts`
-- [ ] Task: Verification
-  - [ ] Sub-task: Write integration tests verifying `maxAge` behavior and rate-limit fallbacks
+- [x] Task: Update tRPC Schemas 5d6c361
+  - [x] Sub-task: Add `maxAge` to Zod inputs
+  - [x] Sub-task: Implement the enriched response wrapper in `router.ts`
+- [x] Task: Verification 5d6c361
+  - [x] Sub-task: Write integration tests verifying `maxAge` behavior and rate-limit fallbacks
