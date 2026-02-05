@@ -4,8 +4,10 @@
 
 - [x] Task: Implement Logger Utility 7714c57
   - [x] Sub-task: Create `api/src/utils/logger.ts`
-- [x] Task: Integrate Logger 7714c57
-  - [x] Sub-task: Replace all `console.log/warn/error` in `api/src/`
+- [x] Task: Refactor to std/log (OTel Ready) 31782d5
+  - [x] Sub-task: Update `logger.ts` to use `std/log` with JSON/Pretty formats
+- [x] Task: Integrate Logger 31782d5
+  - [x] Sub-task: Replace all `console.log/warn/error` in `api/src/` (Updated)
 
 ## Phase 2: Hydration Refactor
 
