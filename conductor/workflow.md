@@ -5,7 +5,11 @@
 1. **The Plan is the Source of Truth:** All work must be tracked in `plan.md`
 2. **The Tech Stack is Deliberate:** Changes to the tech stack must be documented in `tech-stack.md` _before_ implementation
 3. **Test-Driven Development (Knowledge Encoding):** Write unit tests to encode knowledge and prevent regressions. Testing focuses on logical failures and critical edge cases rather than exhaustive line coverage.
-4. **Targeted Testing:** Aim for meaningful test coverage of core logic. A 0% global coverage requirement is set, but with an aggressive focus on "Regression Testing" for critical functionality.
+4. **Avoid Mock-Heavy Tests:** Tests that rely heavily on mocks (e.g., monkey-patching `fetch`) are often brittle and "lie" about system behavior. Favor:
+   - **Architectural Separation:** Isolate pure logic (which can be tested with real data/fixtures) from side-effects (IO, Network).
+   - **Real Integration:** Test against real (or containerized) dependencies where possible for critical paths.
+   - **Fakes over Mocks:** Use robust "fake" implementations of internal interfaces rather than ad-hoc mocks of global globals.
+5. **Targeted Testing:** Aim for meaningful test coverage of core logic. A 0% global coverage requirement is set, but with an aggressive focus on "Regression Testing" for critical functionality.
 5. **User Experience First:** Every decision should prioritize user experience (and developer experience for API consumers).
 6. **Non-Interactive & CI-Aware:** Prefer non-interactive commands. Use `CI=true` for watch-mode tools (tests, linters) to ensure single execution.
 

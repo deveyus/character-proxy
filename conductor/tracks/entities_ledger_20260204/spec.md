@@ -12,25 +12,25 @@ Implement the data models for the three core entity types (Character, Corporatio
 
 - **Character Tables:**
 
-    - `character_static`: `id` (int, pk), `name` (text), `birthday` (timestamp), `gender` (text), `race_id` (int), `bloodline_id` (int).
+  - `character_static`: `id` (int, pk), `name` (text), `birthday` (timestamp), `gender` (text), `race_id` (int), `bloodline_id` (int).
 
-    - `character_ephemeral`: `id` (serial, pk), `character_id` (int, fk), `corporation_id` (int), `alliance_id` (int, optional), `security_status` (float), `recorded_at` (timestamp).
+  - `character_ephemeral`: `id` (serial, pk), `character_id` (int, fk), `corporation_id` (int), `alliance_id` (int, optional), `security_status` (float), `recorded_at` (timestamp).
 
 - **Corporation Tables:**
 
-    - `corporation_static`: `id` (int, pk), `name` (text), `ticker` (text), `date_founded` (timestamp, optional), `creator_id` (int, optional), `faction_id` (int, optional).
+  - `corporation_static`: `id` (int, pk), `name` (text), `ticker` (text), `date_founded` (timestamp, optional), `creator_id` (int, optional), `faction_id` (int, optional).
 
-    - `corporation_ephemeral`: `id` (serial, pk), `corporation_id` (int, fk), `alliance_id` (int, optional), `ceo_id` (int), `member_count` (int), `recorded_at` (timestamp).
+  - `corporation_ephemeral`: `id` (serial, pk), `corporation_id` (int, fk), `alliance_id` (int, optional), `ceo_id` (int), `member_count` (int), `recorded_at` (timestamp).
 
 - **Alliance Tables:**
 
-    - `alliance_static`: `id` (int, pk), `name` (text), `ticker` (text), `date_founded` (timestamp, optional), `creator_id` (int), `creator_corporation_id` (int), `faction_id` (int, optional).
+  - `alliance_static`: `id` (int, pk), `name` (text), `ticker` (text), `date_founded` (timestamp, optional), `creator_id` (int), `creator_corporation_id` (int), `faction_id` (int, optional).
 
-    - `alliance_ephemeral`: `id` (serial, pk), `alliance_id` (int, fk), `executor_corp_id` (int, optional), `member_count` (int), `recorded_at` (timestamp).
+  - `alliance_ephemeral`: `id` (serial, pk), `alliance_id` (int, fk), `executor_corp_id` (int, optional), `member_count` (int), `recorded_at` (timestamp).
 
 - **NPC Corporations:**
 
-    - Special handling to hydrate the database with NPC corporations (from `/corporations/npccorps/`) at startup.
+  - Special handling to hydrate the database with NPC corporations (from `/corporations/npccorps/`) at startup.
 
 - **Constraints:** No JSONB. Use `Int` for EVE IDs.
 
