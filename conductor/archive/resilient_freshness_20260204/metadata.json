@@ -2,6 +2,6 @@
   "id": "resilient_freshness_20260204",
   "name": "Resilient Freshness & Rate Management",
   "description": "Implement ESI error limit tracking, smart TTL with user-defined maxAge, and stale-data fallbacks.",
-  "status": "todo",
+  "status": "done",
   "priority": "high"
 }

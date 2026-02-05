@@ -2,16 +2,16 @@
 
 ## Phase 1: Rate Limiter & ESI Integration
 
-- [x] Task: Implement Rate Limit Tracker
+- [x] Task: Implement Rate Limit Tracker 5d6c361
   - [x] Sub-task: Create `api/src/clients/esi_limiter.ts`
-- [x] Task: Update ESI Client
+- [x] Task: Update ESI Client 5d6c361
   - [x] Sub-task: Update `api/src/clients/esi.ts` to report header values to the limiter
 
 ## Phase 2: Service Layer Refactor
 
-- [x] Task: Centralize TTL & Fallback Logic
+- [x] Task: Centralize TTL & Fallback Logic 5d6c361
   - [x] Sub-task: Create a helper in `api/src/services/utils.ts` to handle the "Should I fetch?" and Fallback logic
-- [x] Task: Update Entity Services
+- [x] Task: Update Entity Services 5d6c361
   - [x] Sub-task: Update Character, Corporation, and Alliance services to use the new TTL helper and accept `maxAge`
 
 ## Phase 3: tRPC & Metadata

@@ -26,6 +26,7 @@ Update service functions (`getById`, `getByName`) to accept an optional `maxAge`
 If an ESI fetch is required but:
 
 - `canFetch()` is false (Rate Limited).
+
 - ESI returns a 5xx error or network failure.
   **Action:** Return the latest local data (even if expired) and explicitly mark the response metadata as `source: 'stale'`.
 

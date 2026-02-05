@@ -1,5 +1,0 @@
-# Track: Resilient Freshness & Rate Management
-
-- [Specification](./spec.md)
-- [Implementation Plan](./plan.md)
-- [Metadata](./metadata.json)
