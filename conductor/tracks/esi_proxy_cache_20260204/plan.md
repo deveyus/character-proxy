@@ -17,7 +17,7 @@
   - [x] Sub-task: Create `api/src/clients/esi.ts` with E-Tag support
   - [x] Sub-task: Add unit tests with fixture-based results (avoiding global mocks)
 
-## Phase 3: Intelligent Service Layer
+## Phase 3: Intelligent Service Layer (Checkpoint: 96204af)
 
 - [x] Task: Implement Entity Service 782a55a
   - [x] Sub-task: Create `api/src/services/entity.ts` with `getCharacter`, `getCorporation`, `getAlliance`
