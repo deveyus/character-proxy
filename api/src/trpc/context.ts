@@ -1,5 +1,4 @@
-
-import { db } from "../db/client.ts";
+import { db } from '../db/client.ts';
 
 /**
  * Defines the context for each tRPC request.
