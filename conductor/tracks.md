@@ -1,4 +1,3 @@
----
+# Project Tracks
 
-- [x] **Track: Entity Type Separation & Architecture Refinement**
-  _Link: [./tracks/entity_separation_20260204/](./tracks/entity_separation_20260204/)_
+This file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.
