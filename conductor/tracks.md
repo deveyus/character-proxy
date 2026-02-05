@@ -1,4 +1,3 @@
----
+# Project Tracks
 
-- [x] **Track: Resilient Freshness & Rate Management**
-  _Link: [./tracks/resilient_freshness_20260204/](./tracks/resilient_freshness_20260204/)_
+This file tracks all major tracks for the project. Each track has its own detailed plan in its respective folder.
