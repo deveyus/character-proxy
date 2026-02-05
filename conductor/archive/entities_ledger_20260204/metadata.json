@@ -1,0 +1,7 @@
+{
+  "id": "entities_ledger_20260204",
+  "name": "Core Entity Schema & Local Resolution",
+  "description": "Implement the data models for Characters, Corporations, and Alliances, and local resolution logic.",
+  "status": "pending",
+  "created_at": "2026-02-04T00:00:00Z"
+}
