@@ -15,7 +15,7 @@
   - [x] Sub-task: Create logic to fetch and store NPC corps from ESI
 - [x] Task: Conductor - User Manual Verification 'Entity Schema' 47fe6c2
 
-## Phase 2: Local Resolution Service
+## Phase 2: Local Resolution Service (Checkpoint: a840acd)
 
 - [x] Task: Implement Local Repository Logic 4d3bb35
   - [x] Sub-task: Create `api/src/db/repos/entity.repo.ts` with Result-based lookups
