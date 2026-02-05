@@ -23,4 +23,4 @@
   - [x] Sub-task: Add `resolveById` and `resolveByName` to `appRouter`
 - [ ] Task: Write Integration Tests
   - [ ] Sub-task: Create `api/test/repos/entity.repo.test.ts`
-- [ ] Task: Conductor - User Manual Verification 'Local Resolution'
+- [x] Task: Conductor - User Manual Verification 'Local Resolution' 8d19ff4
