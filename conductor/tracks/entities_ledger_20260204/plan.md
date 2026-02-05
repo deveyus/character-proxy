@@ -11,8 +11,8 @@
   - [x] Sub-task: Run `deno task db:generate`
   - [x] Sub-task: Verify `deno task dev` applies migrations successfully
   - [x] Sub-task: Generate and apply migrations for updated schema
-- [~] Task: Implement NPC Corporation Hydration
-  - [ ] Sub-task: Create logic to fetch and store NPC corps from ESI
+- [x] Task: Implement NPC Corporation Hydration e38a566
+  - [x] Sub-task: Create logic to fetch and store NPC corps from ESI
 - [ ] Task: Conductor - User Manual Verification 'Entity Schema'
 
 ## Phase 2: Local Resolution Service
