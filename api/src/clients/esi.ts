@@ -1,4 +1,5 @@
-import { Err, Ok, Result } from 'ts-results-es';
+// No imports needed for now if we don't use Result here, but we might need types later.
+// For now let's just remove the unused line.
 
 export type ESIResponse<T> =
   | { status: 'fresh'; data: T; etag: string; expiresAt: Date }

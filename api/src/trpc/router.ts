@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { Context } from './context.ts';
 import { z } from 'zod';
-import { resolveById, resolveByName } from '../db/entity.ts';
+import { getAlliance, getCharacter, getCorporation, resolveByName } from '../services/entity.ts';
 
 const t = initTRPC.context<Context>().create();
 
@@ -19,7 +19,15 @@ export const appRouter = router({
       type: z.enum(['character', 'corporation', 'alliance']),
     }))
     .query(async ({ input }) => {
-      const result = await resolveById(input.id, input.type);
+      let result;
+      if (input.type === 'character') {
+        result = await getCharacter(input.id);
+      } else if (input.type === 'corporation') {
+        result = await getCorporation(input.id);
+      } else {
+        result = await getAlliance(input.id);
+      }
+
       if (result.isErr()) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',

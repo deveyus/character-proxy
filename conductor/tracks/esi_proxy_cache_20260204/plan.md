@@ -5,21 +5,21 @@
 - [x] Task: Rename and Refactor DB Layer acb3e51
   - [x] Sub-task: Move `api/src/db/repos/entity.repo.ts` to `api/src/db/entity.ts`
   - [x] Sub-task: Update all imports and verify tests pass
-- [~] Task: Update Schema with Cache Metadata
-  - [ ] Sub-task: Add `etag`, `expiresAt`, `lastModifiedAt` to static tables in `schema.ts`
-  - [ ] Sub-task: Generate and apply migrations
-- [ ] Task: Update DB functions to handle new fields
-  - [ ] Sub-task: Update `resolveById` and `resolveByName` to include cache fields
+- [x] Task: Update Schema with Cache Metadata 187982f
+  - [x] Sub-task: Add `etag`, `expiresAt`, `lastModifiedAt` to static tables in `schema.ts`
+  - [x] Sub-task: Generate and apply migrations
+- [x] Task: Update DB functions to handle new fields 187982f
+  - [x] Sub-task: Update `resolveById` and `resolveByName` to include cache fields
 
 ## Phase 2: ESI Client Layer
 
-- [ ] Task: Implement Functional ESI Client
-  - [ ] Sub-task: Create `api/src/clients/esi.ts` with E-Tag support
-  - [ ] Sub-task: Add unit tests with fixture-based results (avoiding global mocks)
+- [x] Task: Implement Functional ESI Client f104c35
+  - [x] Sub-task: Create `api/src/clients/esi.ts` with E-Tag support
+  - [x] Sub-task: Add unit tests with fixture-based results (avoiding global mocks)
 
 ## Phase 3: Intelligent Service Layer
 
-- [ ] Task: Implement Entity Service
+- [~] Task: Implement Entity Service
   - [ ] Sub-task: Create `api/src/services/entity.ts` with `getCharacter`, `getCorporation`, `getAlliance`
   - [ ] Sub-task: Implement the "Smart Cache" logic (Check DB -> Call ESI -> Update Ledger)
 - [ ] Task: Integrate with tRPC Router
