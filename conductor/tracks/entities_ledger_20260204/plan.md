@@ -1,6 +1,6 @@
 # Implementation Plan - Core Entity Schema
 
-## Phase 1: Entity & Ledger Schema
+## Phase 1: Entity & Ledger Schema (Checkpoint: de3b47b)
 
 - [x] Task: Define Core Entity Tables (Static & Ephemeral) 3e6da4d
   - [x] Sub-task: Implement initial `character_static` and `character_ephemeral`
