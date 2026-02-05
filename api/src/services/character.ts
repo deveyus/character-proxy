@@ -1,6 +1,7 @@
 import { Err, Ok, Result } from 'ts-results-es';
 import * as db from '../db/character.ts';
 import { fetchEntity } from '../clients/esi.ts';
+import { FetchPriority } from '../clients/esi_limiter.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 
 interface ESICharacter {
@@ -20,6 +21,7 @@ interface ESICharacter {
 export async function getById(
   id: number,
   maxAge?: number,
+  priority: FetchPriority = 'user',
 ): Promise<Result<ServiceResponse<db.CharacterEntity>, Error>> {
   try {
     // 1. Check local DB
@@ -30,7 +32,11 @@ export async function getById(
 
     // 2. Decide if we fetch
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
-      const esiRes = await fetchEntity<ESICharacter>(`/characters/${id}/`, localEntity?.etag);
+      const esiRes = await fetchEntity<ESICharacter>(
+        `/characters/${id}/`,
+        localEntity?.etag,
+        priority,
+      );
 
       if (esiRes.status === 'fresh') {
         // 200 OK
@@ -102,6 +108,7 @@ export async function getById(
           });
         }
         if (localEntity) {
+          console.warn(`ESI fetch failed for character ${id}, serving stale data:`, esiRes.error);
           return Ok({
             data: localEntity,
             metadata: {
@@ -146,13 +153,14 @@ export async function getById(
 export async function getByName(
   name: string,
   maxAge?: number,
+  priority: FetchPriority = 'user',
 ): Promise<Result<ServiceResponse<db.CharacterEntity>, Error>> {
   try {
     const localResult = await db.resolveByName(name);
     if (localResult.isErr()) return localResult;
 
     if (localResult.value) {
-      return getById(localResult.value.characterId, maxAge);
+      return getById(localResult.value.characterId, maxAge, priority);
     }
 
     return Ok({

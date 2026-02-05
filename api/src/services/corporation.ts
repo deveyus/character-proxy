@@ -1,6 +1,7 @@
 import { Err, Ok, Result } from 'ts-results-es';
 import * as db from '../db/corporation.ts';
 import { fetchEntity } from '../clients/esi.ts';
+import { FetchPriority } from '../clients/esi_limiter.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 
 interface ESICorporation {
@@ -20,6 +21,7 @@ interface ESICorporation {
 export async function getById(
   id: number,
   maxAge?: number,
+  priority: FetchPriority = 'user',
 ): Promise<Result<ServiceResponse<db.CorporationEntity>, Error>> {
   try {
     const localResult = await db.resolveById(id);
@@ -27,7 +29,11 @@ export async function getById(
     let localEntity = localResult.value;
 
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
-      const esiRes = await fetchEntity<ESICorporation>(`/corporations/${id}/`, localEntity?.etag);
+      const esiRes = await fetchEntity<ESICorporation>(
+        `/corporations/${id}/`,
+        localEntity?.etag,
+        priority,
+      );
 
       if (esiRes.status === 'fresh') {
         await db.upsertStatic({
@@ -128,11 +134,12 @@ export async function getById(
 export async function getByName(
   name: string,
   maxAge?: number,
+  priority: FetchPriority = 'user',
 ): Promise<Result<ServiceResponse<db.CorporationEntity>, Error>> {
   try {
     const localResult = await db.resolveByName(name);
     if (localResult.isErr()) return localResult;
-    if (localResult.value) return getById(localResult.value.corporationId, maxAge);
+    if (localResult.value) return getById(localResult.value.corporationId, maxAge, priority);
     return Ok({
       data: null,
       metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },

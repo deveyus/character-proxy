@@ -1,4 +1,4 @@
-import { canFetch, updateLimits } from './esi_limiter.ts';
+import { canFetch, FetchPriority, updateLimits } from './esi_limiter.ts';
 
 export type ESIResponse<T> =
   | { status: 'fresh'; data: T; etag: string; expiresAt: Date }
@@ -13,11 +13,12 @@ const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 export async function fetchEntity<T>(
   path: string,
   etag?: string | null,
+  priority: FetchPriority = 'user',
 ): Promise<ESIResponse<T>> {
-  if (!canFetch()) {
+  if (!canFetch(priority)) {
     return {
       status: 'error',
-      error: new Error('Rate limit circuit breaker active. Local cache only.'),
+      error: new Error(`Rate limit circuit breaker active [${priority}]. Local cache only.`),
     };
   }
 
