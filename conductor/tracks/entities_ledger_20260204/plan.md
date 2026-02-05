@@ -17,8 +17,8 @@
 
 ## Phase 2: Local Resolution Service
 
-- [ ] Task: Implement Local Repository Logic
-  - [ ] Sub-task: Create `api/src/db/repos/entity.repo.ts` with Result-based lookups
+- [x] Task: Implement Local Repository Logic 4d3bb35
+  - [x] Sub-task: Create `api/src/db/repos/entity.repo.ts` with Result-based lookups
 - [ ] Task: Add tRPC Procedures
   - [ ] Sub-task: Add `resolveById` and `resolveByName` to `appRouter`
 - [ ] Task: Write Integration Tests
