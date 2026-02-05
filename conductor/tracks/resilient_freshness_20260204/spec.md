@@ -16,6 +16,7 @@ Implement intelligent TTL (Time-To-Live) management and robust ESI rate-limit tr
 ### 2. Smart TTL Logic
 
 Update service functions (`getById`, `getByName`) to accept an optional `maxAge` (seconds).
+
 - **Hard Floor:** `expiresAt` from ESI is the absolute truth. If `now < expiresAt`, always serve from local DB.
 - **Soft TTL:** If `now > expiresAt` AND `now - lastModifiedAt < maxAge`, serve from local DB.
 - **Force Refresh:** If `now > expiresAt` AND `now - lastModifiedAt >= maxAge`, trigger ESI fetch.

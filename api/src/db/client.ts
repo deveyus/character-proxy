@@ -70,7 +70,7 @@ async function ensureDatabaseExists(): Promise<Result<void, Error>> {
 if (import.meta.main) {
   const result = await initializeDatabase();
   if (result.isErr()) {
-    logger.error('DB', 'Migration failed', result.error);
+    logger.error('DB', `Migration failed: ${result.error.message}`, { error: result.error });
     Deno.exit(1);
   }
   await client.end();

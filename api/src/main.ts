@@ -3,7 +3,7 @@ import { appRouter } from './trpc/router.ts';
 import { createTRPCContext } from './trpc/context.ts';
 import { db, initializeDatabase } from './db/client.ts';
 import { hydrateNpcCorporations } from './db/hydration/npc_corps.ts';
-import { logger } from './utils/logger.ts';
+import { logger, setupLogger } from './utils/logger.ts';
 
 const PORT = parseInt(Deno.env.get('PORT') || '4321');
 
@@ -11,12 +11,15 @@ const PORT = parseInt(Deno.env.get('PORT') || '4321');
  * Bootstraps and starts the API server.
  */
 async function startServer() {
+  await setupLogger();
   logger.info('SYSTEM', 'Starting API server...');
 
   // Initialize database (existence check and migrations)
   const dbInit = await initializeDatabase();
   if (dbInit.isErr()) {
-    logger.error('SYSTEM', 'Failed to initialize database', dbInit.error);
+    logger.error('SYSTEM', `Failed to initialize database: ${dbInit.error.message}`, {
+      error: dbInit.error,
+    });
     Deno.exit(1);
   }
 
