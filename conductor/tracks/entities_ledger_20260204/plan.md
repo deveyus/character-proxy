@@ -19,8 +19,8 @@
 
 - [x] Task: Implement Local Repository Logic 4d3bb35
   - [x] Sub-task: Create `api/src/db/repos/entity.repo.ts` with Result-based lookups
-- [ ] Task: Add tRPC Procedures
-  - [ ] Sub-task: Add `resolveById` and `resolveByName` to `appRouter`
+- [x] Task: Add tRPC Procedures 38e800d
+  - [x] Sub-task: Add `resolveById` and `resolveByName` to `appRouter`
 - [ ] Task: Write Integration Tests
   - [ ] Sub-task: Create `api/test/repos/entity.repo.test.ts`
 - [ ] Task: Conductor - User Manual Verification 'Local Resolution'
