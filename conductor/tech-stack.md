@@ -23,5 +23,11 @@
 ## Infrastructure & Tooling
 
 - **Environment Management:** **Nix (Flakes)**. Ensures a reproducible development environment for Deno, PostgreSQL, and other system dependencies.
+- **Logging:** **Deno Standard Library (`std/log`)**. Implemented with custom formatters for OTel-ready JSON and human-readable "pretty" output, supporting structured attributes. Treats logs as event streams (stdout) per 12-Factor principles.
 - **Testing:** **Deno built-in test runner**.
 - **Linting/Formatting:** **Deno built-in linter and formatter**.
+
+## Deployment & Architecture
+
+- **Methodology:** **12-Factor App**. The application is designed to be stateless, configured via environment variables, and treat logs as event streams.
+- **Containerization:** **OCI Ready**. Application artifacts and runtime behaviors are designed for execution within containerized environments (Docker/Podman) without modification.
