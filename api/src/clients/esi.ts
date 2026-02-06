@@ -1,4 +1,11 @@
-import { canFetch, FetchPriority, updateLimits } from './esi_limiter.ts';
+import {
+  canFetch,
+  FetchPriority,
+  getApiHealth,
+  updateApiHealth,
+  updateLimits,
+} from './esi_limiter.ts';
+import { logger } from '../utils/logger.ts';
 
 export type ESIResponse<T> =
   | { status: 'fresh'; data: T; etag: string; expiresAt: Date }
@@ -12,9 +19,27 @@ export type ESIResponse<T> =
 const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
 /**
- * Fetches an entity from ESI with E-Tag support and rate limit awareness.
+ * Checks the general status of the ESI API.
  */
-export async function fetchEntity<T>(
+export async function checkApiStatus(): Promise<boolean> {
+  try {
+    const response = await fetch(`${ESI_BASE_URL}/status/`);
+    if (response.ok) {
+      updateApiHealth('up');
+      return true;
+    }
+    updateApiHealth('degraded');
+    return false;
+  } catch (_error) {
+    updateApiHealth('down');
+    return false;
+  }
+}
+
+/**
+ * Internal function for a single ESI fetch attempt.
+ */
+async function fetchOnce<T>(
   path: string,
   etag?: string | null,
   priority: FetchPriority = 'user',
@@ -77,6 +102,64 @@ export async function fetchEntity<T>(
       error: error instanceof Error ? error : new Error(String(error)),
     };
   }
+}
+
+/**
+ * Fetches an entity from ESI with E-Tag support, rate limit awareness, and smart retries.
+ */
+export async function fetchEntity<T>(
+  path: string,
+  etag?: string | null,
+  priority: FetchPriority = 'user',
+): Promise<ESIResponse<T>> {
+  const maxRetries = 3;
+  let lastResult: ESIResponse<T> | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    if (getApiHealth() === 'down' && priority === 'background') {
+      return lastResult || {
+        status: 'error',
+        type: 'network_error',
+        error: new Error('ESI is currently unreachable.'),
+      };
+    }
+
+    const res = await fetchOnce<T>(path, etag, priority);
+
+    if (res.status !== 'error') {
+      return res;
+    }
+
+    lastResult = res;
+
+    // Don't retry client errors (4xx) or rate limits (handled by canFetch)
+    if (res.type === 'not_found' || res.type === 'forbidden' || res.type === 'rate_limited') {
+      return res;
+    }
+
+    // Server or Network error - potentially retryable
+    if (attempt < maxRetries) {
+      const backoffMs = Math.pow(2, attempt) * 1000;
+      logger.warn('ESI', `Retryable error on ${path} (attempt ${attempt + 1}/${maxRetries + 1})`, {
+        error: res.error.message,
+        type: res.type,
+        nextRetryIn: `${backoffMs}ms`,
+      });
+
+      // On server error, check if ESI is actually up
+      if (res.type === 'server_error') {
+        const isUp = await checkApiStatus();
+        if (!isUp) {
+          logger.error('ESI', 'Stopping retries: ESI /status/ reported issues.');
+          return res;
+        }
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, backoffMs));
+    }
+  }
+
+  return lastResult!;
 }
 
 export interface CorpHistoryEntry {
