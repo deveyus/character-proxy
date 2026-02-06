@@ -15,14 +15,14 @@
 
 ## Phase 2: Discovery Service
 
-- [ ] Task: Discovery Service Core
-  - [ ] Sub-task: Create `api/src/services/discovery.ts`
-  - [ ] Sub-task: Implement `addToQueue` (with deduplication)
-  - [ ] Sub-task: Implement `processQueueItem` (consumer logic)
-- [ ] Task: Extraction Logic
-  - [ ] Sub-task: Implement `extractFromCharacter` (History + Relations)
-  - [ ] Sub-task: Implement `extractFromCorporation` (History + Key People + Bio)
-  - [ ] Sub-task: Implement `extractFromAlliance` (Members + Leadership + Bio)
+- [x] Task: Discovery Service Core c0e75bf
+  - [x] Sub-task: Create `api/src/services/discovery/` modules
+  - [x] Sub-task: Implement `addToQueue` (with deduplication)
+  - [x] Sub-task: Implement `processQueueItem` (consumer logic)
+- [x] Task: Extraction Logic c0e75bf
+  - [x] Sub-task: Implement `extractFromCharacter` (History + Relations)
+  - [x] Sub-task: Implement `extractFromCorporation` (History + Key People + Bio)
+  - [x] Sub-task: Implement `extractFromAlliance` (Members + Leadership + Bio)
 
 ## Phase 3: Integration
 
