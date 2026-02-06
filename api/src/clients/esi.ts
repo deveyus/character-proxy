@@ -7,6 +7,8 @@ import {
 } from './esi_limiter.ts';
 import { logger } from '../utils/logger.ts';
 
+import { metrics } from '../utils/metrics.ts';
+
 export type ESIResponse<T> =
   | { status: 'fresh'; data: T; etag: string; expiresAt: Date }
   | { status: 'not_modified'; expiresAt: Date }
@@ -45,6 +47,7 @@ async function fetchOnce<T>(
   priority: FetchPriority = 'user',
 ): Promise<ESIResponse<T>> {
   if (!canFetch(priority)) {
+    metrics.inc('esi_errors_total');
     return {
       status: 'error',
       type: 'rate_limited',
@@ -59,6 +62,7 @@ async function fetchOnce<T>(
     }
 
     const response = await fetch(`${ESI_BASE_URL}${path}`, { headers });
+    metrics.inc('esi_requests_total');
 
     // Update limits from headers
     const remain = response.headers.get('x-esi-error-limit-remain');
@@ -75,6 +79,7 @@ async function fetchOnce<T>(
     }
 
     if (!response.ok) {
+      metrics.inc('esi_errors_total');
       let type: 'not_found' | 'forbidden' | 'server_error' | 'network_error' = 'server_error';
       if (response.status === 404) type = 'not_found';
       if (response.status === 403 || response.status === 401) type = 'forbidden';
@@ -96,6 +101,7 @@ async function fetchOnce<T>(
       expiresAt,
     };
   } catch (error) {
+    metrics.inc('esi_errors_total');
     return {
       status: 'error',
       type: 'network_error',
@@ -139,6 +145,7 @@ export async function fetchEntity<T>(
 
     // Server or Network error - potentially retryable
     if (attempt < maxRetries) {
+      metrics.inc('esi_retries_total');
       const backoffMs = Math.pow(2, attempt) * 1000;
       logger.warn('ESI', `Retryable error on ${path} (attempt ${attempt + 1}/${maxRetries + 1})`, {
         error: res.error.message,

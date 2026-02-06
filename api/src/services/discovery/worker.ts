@@ -9,9 +9,13 @@ import { db } from '../../db/client.ts';
 import { discoveryQueue } from '../../db/schema.ts';
 import { and, eq } from 'drizzle-orm';
 
+import { metrics } from '../../utils/metrics.ts';
+import { setState } from '../../db/system_state.ts';
+
 export type EntityType = 'character' | 'corporation' | 'alliance';
 
 const MAX_ATTEMPTS = 5;
+const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 
 /**
  * Processes a single item from the queue.
@@ -94,6 +98,7 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
     }
 
     await markAsCompleted(item.entityId, entityType);
+    metrics.inc('discovery_queue_processed_total');
     return Ok(true);
   } catch (_error) {
     return Ok(false); // Silent error for loop
@@ -106,7 +111,20 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
 export async function startDiscoveryWorker(workerId = 0) {
   logger.info('SYSTEM', `Discovery worker ${workerId} started.`);
 
+  let lastHeartbeat = 0;
+
   while (true) {
+    // Send heartbeat
+    if (Date.now() - lastHeartbeat > HEARTBEAT_INTERVAL_MS) {
+      await setState(`heartbeat_worker_${workerId}`, {
+        last_seen: new Date(),
+        status: 'running',
+      }).catch((err) =>
+        logger.warn('SYSTEM', `Failed to send heartbeat for worker ${workerId}: ${err.message}`)
+      );
+      lastHeartbeat = Date.now();
+    }
+
     const result = await processQueueItem();
 
     if (result.isErr()) {

@@ -2,13 +2,13 @@
 
 ## Phase 1: Security & Context
 
-- [~] Task: API Key Authentication
-  - [ ] Sub-task: Update `api/src/trpc/context.ts` to check `x-api-key` header
-  - [ ] Sub-task: Update `api/src/trpc/router.ts` to enforce auth on sensitive procedures
+- [x] Task: API Key Authentication 7b7f208
+  - [x] Sub-task: Update `api/src/trpc/context.ts` to check `x-api-key` header
+  - [x] Sub-task: Update `api/src/trpc/router.ts` to enforce auth on sensitive procedures
 
 ## Phase 2: Metrics & Heartbeats
 
-- [ ] Task: Metrics Collector
+- [~] Task: Metrics Collector
   - [ ] Sub-task: Implement `api/src/utils/metrics.ts`
 - [ ] Task: Worker Heartbeat
   - [ ] Sub-task: Update `api/src/services/discovery/worker.ts` to send heartbeats

@@ -1,9 +1,13 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { Context } from './context.ts';
 import { z } from 'zod';
+import { sql } from 'drizzle-orm';
 import * as characterService from '../services/character.ts';
 import * as corporationService from '../services/corporation.ts';
 import * as allianceService from '../services/alliance.ts';
+
+import { metrics } from '../utils/metrics.ts';
+import { getLimitState } from '../clients/esi_limiter.ts';
 
 const t = initTRPC.context<Context>().create();
 
@@ -34,12 +38,34 @@ export const appRouter = router({
     return { status: 'ok' };
   }),
 
-  resolveById: protectedProcedure
-    .input(z.object({
-      id: z.number(),
-      type: z.enum(['character', 'corporation', 'alliance']),
-      maxAge: z.number().optional(),
-    }))
+  getSystemStatus: protectedProcedure.query(async ({ ctx }) => {
+    const limiter = getLimitState();
+    const currentMetrics = metrics.getSnapshot();
+
+    // Fetch heartbeats from system_state
+    const heartbeats = await ctx.db.execute(sql`
+      SELECT key, value, updated_at 
+      FROM system_state 
+      WHERE key LIKE 'heartbeat_worker_%'
+    `);
+
+    const queueDepth = await ctx.db.execute(sql`
+      SELECT COUNT(*) as count FROM discovery_queue
+    `);
+
+    return {
+      limiter,
+      metrics: currentMetrics,
+      workers: heartbeats,
+      queueDepth: queueDepth[0]?.count || 0,
+    };
+  }),
+
+  resolveById: protectedProcedure.input(z.object({
+    id: z.number(),
+    type: z.enum(['character', 'corporation', 'alliance']),
+    maxAge: z.number().optional(),
+  }))
     .query(async ({ input }) => {
       let result;
       if (input.type === 'character') {

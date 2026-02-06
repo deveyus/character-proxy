@@ -9,6 +9,8 @@ import { db as pg } from '../db/client.ts';
 import { characterStatic } from '../db/schema.ts';
 import { eq, sql } from 'drizzle-orm';
 
+import { metrics } from '../utils/metrics.ts';
+
 interface ESICharacter {
   name: string;
   birthday: string;
@@ -44,6 +46,7 @@ export async function getById(
 
     // 3. Decide if we fetch
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
+      metrics.inc('cache_misses_total');
       const esiRes = await fetchEntity<ESICharacter>(
         `/characters/${id}/`,
         localEntity?.etag,
@@ -150,6 +153,7 @@ export async function getById(
 
     // Default: return from cache
     if (localEntity) {
+      metrics.inc('cache_hits_total');
       return Ok({
         data: localEntity,
         metadata: {

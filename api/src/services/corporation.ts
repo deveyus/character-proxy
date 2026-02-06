@@ -8,6 +8,7 @@ import { logger } from '../utils/logger.ts';
 import { db as pg } from '../db/client.ts';
 import { corporationStatic } from '../db/schema.ts';
 import { eq, sql } from 'drizzle-orm';
+import { metrics } from '../utils/metrics.ts';
 
 interface ESICorporation {
   name: string;
@@ -41,6 +42,7 @@ export async function getById(
     }
 
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
+      metrics.inc('cache_misses_total');
       const esiRes = await fetchEntity<ESICorporation>(
         `/corporations/${id}/`,
         localEntity?.etag,
@@ -136,6 +138,7 @@ export async function getById(
     }
 
     if (localEntity) {
+      metrics.inc('cache_hits_total');
       return Ok({
         data: localEntity,
         metadata: {
