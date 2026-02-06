@@ -5,6 +5,8 @@ import { db, initializeDatabase } from './db/client.ts';
 import { hydrateNpcCorporations } from './db/hydration/npc_corps.ts';
 import { logger, setupLogger } from './utils/logger.ts';
 import { startDiscoveryWorker } from './services/discovery/worker.ts';
+import { initializeLimiter } from './clients/esi_limiter.ts';
+import { startMaintenanceWorker } from './services/discovery/maintenance.ts';
 
 const PORT = parseInt(Deno.env.get('PORT') || '4321');
 
@@ -24,6 +26,9 @@ async function startServer() {
     Deno.exit(1);
   }
 
+  // Load persistent limiter state
+  await initializeLimiter();
+
   // Hydrate NPC corporations
   const hydrationResult = await hydrateNpcCorporations(db);
   if (hydrationResult.isErr()) {
@@ -31,8 +36,18 @@ async function startServer() {
   }
 
   // Start background discovery worker
-  startDiscoveryWorker().catch((err) => {
-    logger.error('SYSTEM', 'Discovery worker crashed', { error: err });
+  const workerCount = parseInt(Deno.env.get('WORKER_COUNT') || '1');
+  logger.info('SYSTEM', `Starting ${workerCount} discovery workers...`);
+
+  for (let i = 0; i < workerCount; i++) {
+    startDiscoveryWorker(i).catch((err) => {
+      logger.error('SYSTEM', `Discovery worker ${i} crashed`, { error: err });
+    });
+  }
+
+  // Start maintenance worker
+  startMaintenanceWorker().catch((err) => {
+    logger.error('SYSTEM', 'Maintenance worker crashed', { error: err });
   });
 
   Deno.serve({ port: PORT }, (req) => {

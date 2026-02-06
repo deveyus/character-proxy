@@ -22,6 +22,20 @@
       "when": 1770336142898,
       "tag": "0002_discovery_queue_init",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770349594967,
+      "tag": "0003_hardened_core_additions",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770349904962,
+      "tag": "0004_hardened_core_lean_queue",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,14 @@ export type AllianceEntity =
   & typeof schema.allianceStatic.$inferSelect
   & typeof schema.allianceEphemeral.$inferSelect;
 
+type Tx = {
+  insert: typeof db.insert;
+  update: typeof db.update;
+  delete: typeof db.delete;
+  select: typeof db.select;
+  execute: typeof db.execute;
+};
+
 /**
  * Resolves an alliance by its EVE ID.
  */
@@ -71,9 +79,10 @@ export async function resolveByName(
  */
 export async function upsertStatic(
   values: typeof schema.allianceStatic.$inferInsert,
+  tx: Tx = db as unknown as Tx,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(schema.allianceStatic)
+    await tx.insert(schema.allianceStatic)
       .values(values)
       .onConflictDoUpdate({
         target: schema.allianceStatic.allianceId,
@@ -90,9 +99,10 @@ export async function upsertStatic(
  */
 export async function appendEphemeral(
   values: Omit<typeof schema.allianceEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
+  tx: Tx = db as unknown as Tx,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(schema.allianceEphemeral).values({
+    await tx.insert(schema.allianceEphemeral).values({
       ...values,
       recordId: uuidv7(),
       recordedAt: new Date(),

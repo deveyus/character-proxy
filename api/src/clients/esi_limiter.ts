@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger.ts';
+import { getState, setState } from '../db/system_state.ts';
 
 /**
  * Global state for tracking ESI error limits.
@@ -12,6 +13,42 @@ export type ApiHealth = 'up' | 'degraded' | 'down';
 
 let apiHealth: ApiHealth = 'up';
 let lastHealthCheck = 0;
+
+/**
+ * Loads the last known limiter state from the database.
+ */
+export async function initializeLimiter() {
+  const stateResult = await getState<{
+    remain: number;
+    reset: number;
+    health: ApiHealth;
+    lastUpdate: number;
+  }>('esi_limiter');
+
+  if (stateResult.isOk() && stateResult.value) {
+    const s = stateResult.value;
+    errorLimitRemain = s.remain;
+    errorLimitReset = s.reset;
+    apiHealth = s.health;
+    lastUpdate = s.lastUpdate;
+    logger.info('ESI', 'Loaded persistent limiter state', {
+      remain: errorLimitRemain,
+      health: apiHealth,
+    });
+  }
+}
+
+/**
+ * Syncs the current state to the database.
+ */
+async function syncLimiter() {
+  await setState('esi_limiter', {
+    remain: errorLimitRemain,
+    reset: errorLimitReset,
+    health: apiHealth,
+    lastUpdate,
+  });
+}
 
 /**
  * Thresholds for different priorities.
@@ -30,6 +67,7 @@ export function updateLimits(remain: number, reset: number) {
   errorLimitRemain = remain;
   errorLimitReset = reset;
   lastUpdate = Date.now();
+  syncLimiter().catch((err) => logger.warn('ESI', `Failed to sync limiter: ${err.message}`));
 }
 
 /**
@@ -41,6 +79,7 @@ export function updateApiHealth(health: ApiHealth) {
   if (health !== 'up') {
     logger.warn('ESI', `API Health updated to: ${health.toUpperCase()}`);
   }
+  syncLimiter().catch((err) => logger.warn('ESI', `Failed to sync limiter: ${err.message}`));
 }
 
 /**

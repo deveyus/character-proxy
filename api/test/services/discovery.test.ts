@@ -9,7 +9,7 @@ import {
 } from '../../src/db/schema.ts';
 import * as characterService from '../../src/services/character.ts';
 import { processQueueItem } from '../../src/services/discovery/worker.ts';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { setupLogger } from '../../src/utils/logger.ts';
 
 Deno.test('Discovery Integration', async (t) => {
@@ -37,12 +37,11 @@ Deno.test('Discovery Integration', async (t) => {
   await t.step('processing the queue should fetch the corporation', async () => {
     const queued = await db.select().from(discoveryQueue)
       .where(
-        and(eq(discoveryQueue.entityType, 'corporation'), eq(discoveryQueue.status, 'pending')),
+        and(eq(discoveryQueue.entityType, 'corporation'), isNull(discoveryQueue.lockedUntil)),
       )
       .limit(1);
 
     const targetCorpId = queued[0].entityId;
-
     // Process one item
     const processed = await processQueueItem();
     assertEquals(processed.isOk(), true);

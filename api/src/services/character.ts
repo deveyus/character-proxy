@@ -5,6 +5,9 @@ import { FetchPriority } from '../clients/esi_limiter.ts';
 import { logger } from '../utils/logger.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 import { extractFromCharacter } from './discovery/extraction.ts';
+import { db as pg } from '../db/client.ts';
+import { characterStatic } from '../db/schema.ts';
+import { eq, sql } from 'drizzle-orm';
 
 interface ESICharacter {
   name: string;
@@ -32,7 +35,14 @@ export async function getById(
 
     let localEntity = localResult.value;
 
-    // 2. Decide if we fetch
+    // 2. Increment access count if user priority
+    if (priority === 'user' && localEntity) {
+      await pg.update(characterStatic)
+        .set({ accessCount: sql`${characterStatic.accessCount} + 1` })
+        .where(eq(characterStatic.characterId, id));
+    }
+
+    // 3. Decide if we fetch
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
       const esiRes = await fetchEntity<ESICharacter>(
         `/characters/${id}/`,
@@ -41,25 +51,27 @@ export async function getById(
       );
 
       if (esiRes.status === 'fresh') {
-        // 4a. 200 OK - Update static and append to ledger
-        const updateStatic = await db.upsertStatic({
-          characterId: id,
-          name: esiRes.data.name,
-          birthday: new Date(esiRes.data.birthday),
-          gender: esiRes.data.gender,
-          raceId: esiRes.data.race_id,
-          bloodlineId: esiRes.data.bloodline_id,
-          etag: esiRes.etag,
-          expiresAt: esiRes.expiresAt,
-          lastModifiedAt: new Date(),
-        });
-        if (updateStatic.isErr()) return updateStatic;
+        // 4a. 200 OK - Atomic update
+        await pg.transaction(async (tx) => {
+          const updateStatic = await db.upsertStatic({
+            characterId: id,
+            name: esiRes.data.name,
+            birthday: new Date(esiRes.data.birthday),
+            gender: esiRes.data.gender,
+            raceId: esiRes.data.race_id,
+            bloodlineId: esiRes.data.bloodline_id,
+            etag: esiRes.etag,
+            expiresAt: esiRes.expiresAt,
+            lastModifiedAt: new Date(),
+          }, tx);
+          if (updateStatic.isErr()) throw updateStatic.error;
 
-        await db.appendEphemeral({
-          characterId: id,
-          corporationId: esiRes.data.corporation_id,
-          allianceId: esiRes.data.alliance_id || null,
-          securityStatus: esiRes.data.security_status,
+          await db.appendEphemeral({
+            characterId: id,
+            corporationId: esiRes.data.corporation_id,
+            allianceId: esiRes.data.alliance_id || null,
+            securityStatus: esiRes.data.security_status,
+          }, tx);
         });
 
         // Trigger discovery analysis (background)

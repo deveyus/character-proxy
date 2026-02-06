@@ -1,4 +1,4 @@
-import { bigint, pgTable, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigint, jsonb, pgTable, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // --- Characters ---
 export const characterStatic = pgTable('character_static', {
@@ -11,6 +11,7 @@ export const characterStatic = pgTable('character_static', {
   etag: text('etag'),
   expiresAt: timestamp('expires_at'),
   lastModifiedAt: timestamp('last_modified_at'),
+  accessCount: bigint('access_count', { mode: 'number' }).default(0).notNull(),
 });
 
 export const characterEphemeral = pgTable('character_ephemeral', {
@@ -35,6 +36,7 @@ export const corporationStatic = pgTable('corporation_static', {
   etag: text('etag'),
   expiresAt: timestamp('expires_at'),
   lastModifiedAt: timestamp('last_modified_at'),
+  accessCount: bigint('access_count', { mode: 'number' }).default(0).notNull(),
 });
 
 export const corporationEphemeral = pgTable('corporation_ephemeral', {
@@ -60,6 +62,7 @@ export const allianceStatic = pgTable('alliance_static', {
   etag: text('etag'),
   expiresAt: timestamp('expires_at'),
   lastModifiedAt: timestamp('last_modified_at'),
+  accessCount: bigint('access_count', { mode: 'number' }).default(0).notNull(),
 });
 
 export const allianceEphemeral = pgTable('alliance_ephemeral', {
@@ -76,13 +79,17 @@ export const allianceEphemeral = pgTable('alliance_ephemeral', {
 export const discoveryQueue = pgTable('discovery_queue', {
   entityId: bigint('entity_id', { mode: 'number' }).notNull(),
   entityType: text('entity_type', { enum: ['character', 'corporation', 'alliance'] }).notNull(),
-  status: text('status', { enum: ['pending', 'processing', 'completed', 'failed'] }).default(
-    'pending',
-  )
-    .notNull(),
   attempts: bigint('attempts', { mode: 'number' }).default(0).notNull(),
+  lockedUntil: timestamp('locked_until'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => ({
   pk: { columns: [table.entityId, table.entityType] },
 }));
+
+// --- System State ---
+export const systemState = pgTable('system_state', {
+  key: text('key').primaryKey(),
+  value: jsonb('value').notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});

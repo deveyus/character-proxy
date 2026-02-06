@@ -5,6 +5,9 @@ import { FetchPriority } from '../clients/esi_limiter.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 import { extractFromAlliance } from './discovery/extraction.ts';
 import { logger } from '../utils/logger.ts';
+import { db as pg } from '../db/client.ts';
+import { allianceStatic } from '../db/schema.ts';
+import { eq, sql } from 'drizzle-orm';
 
 interface ESIAlliance {
   name: string;
@@ -30,6 +33,13 @@ export async function getById(
     if (localResult.isErr()) return localResult;
     let localEntity = localResult.value;
 
+    // 2. Increment access count if user priority
+    if (priority === 'user' && localEntity) {
+      await pg.update(allianceStatic)
+        .set({ accessCount: sql`${allianceStatic.accessCount} + 1` })
+        .where(eq(allianceStatic.allianceId, id));
+    }
+
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
       const esiRes = await fetchEntity<ESIAlliance>(
         `/alliances/${id}/`,
@@ -38,23 +48,26 @@ export async function getById(
       );
 
       if (esiRes.status === 'fresh') {
-        await db.upsertStatic({
-          allianceId: id,
-          name: esiRes.data.name,
-          ticker: esiRes.data.ticker,
-          dateFounded: esiRes.data.date_founded ? new Date(esiRes.data.date_founded) : null,
-          creatorId: esiRes.data.creator_id,
-          creatorCorporationId: esiRes.data.creator_corporation_id,
-          factionId: esiRes.data.faction_id,
-          etag: esiRes.etag,
-          expiresAt: esiRes.expiresAt,
-          lastModifiedAt: new Date(),
-        });
+        await pg.transaction(async (tx) => {
+          const updateStatic = await db.upsertStatic({
+            allianceId: id,
+            name: esiRes.data.name,
+            ticker: esiRes.data.ticker,
+            dateFounded: esiRes.data.date_founded ? new Date(esiRes.data.date_founded) : null,
+            creatorId: esiRes.data.creator_id,
+            creatorCorporationId: esiRes.data.creator_corporation_id,
+            factionId: esiRes.data.faction_id,
+            etag: esiRes.etag,
+            expiresAt: esiRes.expiresAt,
+            lastModifiedAt: new Date(),
+          }, tx);
+          if (updateStatic.isErr()) throw updateStatic.error;
 
-        await db.appendEphemeral({
-          allianceId: id,
-          executorCorpId: esiRes.data.executor_corporation_id || null,
-          memberCount: esiRes.data.member_count,
+          await db.appendEphemeral({
+            allianceId: id,
+            executorCorpId: esiRes.data.executor_corporation_id || null,
+            memberCount: esiRes.data.member_count,
+          }, tx);
         });
 
         // Trigger discovery analysis (background)

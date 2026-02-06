@@ -8,6 +8,14 @@ export type CorporationEntity =
   & typeof schema.corporationStatic.$inferSelect
   & typeof schema.corporationEphemeral.$inferSelect;
 
+type Tx = {
+  insert: typeof db.insert;
+  update: typeof db.update;
+  delete: typeof db.delete;
+  select: typeof db.select;
+  execute: typeof db.execute;
+};
+
 /**
  * Resolves a corporation by its EVE ID.
  */
@@ -71,9 +79,10 @@ export async function resolveByName(
  */
 export async function upsertStatic(
   values: typeof schema.corporationStatic.$inferInsert,
+  tx: Tx = db as unknown as Tx,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(schema.corporationStatic)
+    await tx.insert(schema.corporationStatic)
       .values(values)
       .onConflictDoUpdate({
         target: schema.corporationStatic.corporationId,
@@ -90,9 +99,10 @@ export async function upsertStatic(
  */
 export async function appendEphemeral(
   values: Omit<typeof schema.corporationEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
+  tx: Tx = db as unknown as Tx,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(schema.corporationEphemeral).values({
+    await tx.insert(schema.corporationEphemeral).values({
       ...values,
       recordId: uuidv7(),
       recordedAt: new Date(),

@@ -2,7 +2,7 @@
 
 ## Phase 1: DB Schema & Persistence
 
-- [ ] Task: DB Schema Migration
+- [~] Task: DB Schema Migration
   - [ ] Sub-task: Add `access_count` to static tables
   - [ ] Sub-task: Add `locked_until` to `discovery_queue`
   - [ ] Sub-task: Create `system_state` table

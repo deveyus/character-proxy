@@ -8,6 +8,14 @@ export type CharacterEntity =
   & typeof schema.characterStatic.$inferSelect
   & typeof schema.characterEphemeral.$inferSelect;
 
+type Tx = {
+  insert: typeof db.insert;
+  update: typeof db.update;
+  delete: typeof db.delete;
+  select: typeof db.select;
+  execute: typeof db.execute;
+};
+
 /**
  * Resolves a character by its EVE ID.
  */
@@ -71,9 +79,10 @@ export async function resolveByName(
  */
 export async function upsertStatic(
   values: typeof schema.characterStatic.$inferInsert,
+  tx: Tx = db as unknown as Tx,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(schema.characterStatic)
+    await tx.insert(schema.characterStatic)
       .values(values)
       .onConflictDoUpdate({
         target: schema.characterStatic.characterId,
@@ -90,9 +99,10 @@ export async function upsertStatic(
  */
 export async function appendEphemeral(
   values: Omit<typeof schema.characterEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
+  tx: Tx = db as unknown as Tx,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(schema.characterEphemeral).values({
+    await tx.insert(schema.characterEphemeral).values({
       ...values,
       recordId: uuidv7(),
       recordedAt: new Date(),

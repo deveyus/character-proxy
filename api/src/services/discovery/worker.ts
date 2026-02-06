@@ -2,7 +2,7 @@ import { logger } from '../../utils/logger.ts';
 import * as characterService from '../character.ts';
 import * as corporationService from '../corporation.ts';
 import * as allianceService from '../alliance.ts';
-import { getNextPendingItem, markAsCompleted, markAsFailed, markAsProcessing } from './queue.ts';
+import { claimTask, markAsCompleted, markAsFailed } from './queue.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 import { getApiHealth } from '../../clients/esi_limiter.ts';
 
@@ -17,12 +17,11 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
       return Ok(false);
     }
 
-    const item = await getNextPendingItem();
+    const item = await claimTask();
     if (!item) return Ok(false);
 
     const entityType = item.entityType as EntityType;
 
-    await markAsProcessing(item.entityId, entityType);
     logger.debug('SYSTEM', `Processing discovery: ${entityType} ${item.entityId}`);
 
     let result;
@@ -51,8 +50,8 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
 /**
  * Background loop for processing the discovery queue.
  */
-export async function startDiscoveryWorker() {
-  logger.info('SYSTEM', 'Starting discovery worker...');
+export async function startDiscoveryWorker(workerId = 0) {
+  logger.info('SYSTEM', `Discovery worker ${workerId} started.`);
 
   while (true) {
     const result = await processQueueItem();
