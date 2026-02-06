@@ -36,7 +36,7 @@
 
 ## Phase 4: Verification
 
-- [ ] Task: Integration Testing
-  - [ ] Sub-task: Verify that fetching a Character queues their Corp
-  - [ ] Sub-task: Verify that the Worker processes the queue and populates the DB
-  - [ ] Sub-task: Verify Bio scraping captures links
+- [x] Task: Integration Testing 5678a43
+  - [x] Sub-task: Verify that fetching a Character queues their Corp
+  - [x] Sub-task: Verify that the Worker processes the queue and populates the DB
+  - [x] Sub-task: Verify Bio scraping captures links (via unit tests and integration logic)

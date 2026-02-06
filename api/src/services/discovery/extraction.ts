@@ -1,6 +1,7 @@
 import { addToQueue } from './queue.ts';
 import { getCharacterCorpHistory, getCorpAllianceHistory, getAllianceMembers } from '../../clients/esi.ts';
 import { parseBioLinks } from '../../utils/bio_parser.ts';
+import { logger } from '../../utils/logger.ts';
 
 /**
  * Analyzes a Character and queues related entities.
