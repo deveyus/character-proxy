@@ -4,6 +4,7 @@ import postgres from 'postgres';
 import { dirname, fromFileUrl, join } from 'std/path/mod.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 import { logger } from '../utils/logger.ts';
+import * as schema from './schema.ts';
 
 // Configuration
 const DB_NAME = 'character_proxy';
@@ -21,7 +22,7 @@ export const client = connectionString
     max: MAX_POOL_SIZE,
   });
 
-export const db = drizzle(client);
+export const db = drizzle(client, { schema });
 
 /**
  * Ensures the database exists and all migrations are applied.

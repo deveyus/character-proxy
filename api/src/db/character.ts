@@ -1,6 +1,7 @@
 import { db } from './client.ts';
 import * as schema from './schema.ts';
 import { desc, eq } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Err, Ok, Result } from 'ts-results-es';
 import { uuidv7 } from 'uuidv7';
 
@@ -8,13 +9,7 @@ export type CharacterEntity =
   & typeof schema.characterStatic.$inferSelect
   & typeof schema.characterEphemeral.$inferSelect;
 
-type Tx = {
-  insert: typeof db.insert;
-  update: typeof db.update;
-  delete: typeof db.delete;
-  select: typeof db.select;
-  execute: typeof db.execute;
-};
+type Tx = PostgresJsDatabase<typeof schema>;
 
 /**
  * Resolves a character by its EVE ID.
@@ -79,7 +74,7 @@ export async function resolveByName(
  */
 export async function upsertStatic(
   values: typeof schema.characterStatic.$inferInsert,
-  tx: Tx = db as unknown as Tx,
+  tx: Tx = db,
 ): Promise<Result<void, Error>> {
   try {
     await tx.insert(schema.characterStatic)
@@ -99,7 +94,7 @@ export async function upsertStatic(
  */
 export async function appendEphemeral(
   values: Omit<typeof schema.characterEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
-  tx: Tx = db as unknown as Tx,
+  tx: Tx = db,
 ): Promise<Result<void, Error>> {
   try {
     await tx.insert(schema.characterEphemeral).values({

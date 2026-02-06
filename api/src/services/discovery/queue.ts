@@ -35,7 +35,7 @@ export async function claimTask() {
 
   return await db.transaction(async (tx) => {
     // We use a raw SQL fragment for the complex join/ordering to keep it efficient
-    const [item] = await tx.execute(sql`
+    const result = await tx.execute(sql`
       SELECT q.* 
       FROM discovery_queue q
       LEFT JOIN character_static char ON q.entity_id = char.character_id AND q.entity_type = 'character'
@@ -50,7 +50,8 @@ export async function claimTask() {
       FOR UPDATE OF q SKIP LOCKED
     `);
 
-    if (!item) return null;
+    if (result.length === 0) return null;
+    const item = result[0] as Record<string, unknown>;
 
     const entityType = item.entity_type as EntityType;
     const entityId = item.entity_id as number;

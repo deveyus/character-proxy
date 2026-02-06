@@ -1,6 +1,7 @@
 import { db } from './client.ts';
 import * as schema from './schema.ts';
 import { desc, eq } from 'drizzle-orm';
+import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 import { Err, Ok, Result } from 'ts-results-es';
 import { uuidv7 } from 'uuidv7';
 
@@ -8,13 +9,7 @@ export type AllianceEntity =
   & typeof schema.allianceStatic.$inferSelect
   & typeof schema.allianceEphemeral.$inferSelect;
 
-type Tx = {
-  insert: typeof db.insert;
-  update: typeof db.update;
-  delete: typeof db.delete;
-  select: typeof db.select;
-  execute: typeof db.execute;
-};
+type Tx = PostgresJsDatabase<typeof schema>;
 
 /**
  * Resolves an alliance by its EVE ID.
@@ -79,7 +74,7 @@ export async function resolveByName(
  */
 export async function upsertStatic(
   values: typeof schema.allianceStatic.$inferInsert,
-  tx: Tx = db as unknown as Tx,
+  tx: Tx = db,
 ): Promise<Result<void, Error>> {
   try {
     await tx.insert(schema.allianceStatic)
@@ -99,7 +94,7 @@ export async function upsertStatic(
  */
 export async function appendEphemeral(
   values: Omit<typeof schema.allianceEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
-  tx: Tx = db as unknown as Tx,
+  tx: Tx = db,
 ): Promise<Result<void, Error>> {
   try {
     await tx.insert(schema.allianceEphemeral).values({
