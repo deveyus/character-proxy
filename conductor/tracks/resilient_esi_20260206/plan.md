@@ -2,7 +2,7 @@
 
 ## Phase 1: Health Tracking & Error Classification
 
-- [ ] Task: Enhanced Limiter
+- [~] Task: Enhanced Limiter
   - [ ] Sub-task: Update `api/src/clients/esi_limiter.ts` to track `apiHealth` (up/down/degraded)
 - [ ] Task: Error Classification
   - [ ] Sub-task: Update `ESIResponse` type in `esi.ts` to be more descriptive

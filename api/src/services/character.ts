@@ -108,7 +108,7 @@ export async function getById(
 
       if (esiRes.status === 'error') {
         // Fallback to stale
-        if (esiRes.error.message.includes('404')) {
+        if (esiRes.type === 'not_found') {
           return Ok({
             data: null,
             metadata: {

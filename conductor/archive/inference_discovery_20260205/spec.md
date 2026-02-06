@@ -19,15 +19,18 @@ A dedicated table to act as a buffer for entities that need to be fetched.
 Whenever an entity is successfully resolved (whether from ESI or Cache), the system must inspect it and queue related entities.
 
 #### A. Character (`extractFromCharacter`)
+
 - **Corporation History:** Fetch `GET /characters/{id}/corporationhistory/`. Queue **ALL** past and present Corporation IDs.
 - **Current Relations:** Queue the current `corporation_id` and `alliance_id`.
 
 #### B. Corporation (`extractFromCorporation`)
+
 - **Alliance History:** Fetch `GET /corporations/{id}/alliancehistory/`. Queue **ALL** past and present Alliance IDs.
 - **Key People:** Queue `ceo_id` and `creator_id` (Founder).
 - **Bio/Description:** Parse the description text. Extract all `showinfo` links that point to Characters, Corporations, or Alliances and queue them.
 
 #### C. Alliance (`extractFromAlliance`)
+
 - **Membership:** Fetch `GET /alliances/{id}/corporations/`. Queue **ALL** member Corporation IDs.
 - **Leadership:** Queue `executor_corporation_id` and `creator_id`.
 - **Bio/Description:** Parse the description text for `showinfo` links.
@@ -35,6 +38,7 @@ Whenever an entity is successfully resolved (whether from ESI or Cache), the sys
 ### 3. Bio Scraping (`BioParser`)
 
 Implement a utility to parse EVE Online's specific HTML-like formatting.
+
 - **Target:** `<a href="showinfo:typeID//itemID">...</a>`
 - **Mapping:**
   - Type `1373` -> Character
@@ -45,10 +49,11 @@ Implement a utility to parse EVE Online's specific HTML-like formatting.
 ### 4. Background Worker
 
 A non-blocking process that:
-1.  Polls the `discovery_queue` for `pending` items.
-2.  Executes the standard `getById` service call with `priority: 'background'`.
-3.  Updates the queue status (`completed` or `failed`).
-4.  Respects the **ESI Rate Limiter** (stops if the 'background' budget is exhausted).
+
+1. Polls the `discovery_queue` for `pending` items.
+2. Executes the standard `getById` service call with `priority: 'background'`.
+3. Updates the queue status (`completed` or `failed`).
+4. Respects the **ESI Rate Limiter** (stops if the 'background' budget is exhausted).
 
 ## Architecture
 

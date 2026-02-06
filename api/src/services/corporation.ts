@@ -102,7 +102,7 @@ export async function getById(
       }
 
       if (esiRes.status === 'error') {
-        if (esiRes.error.message.includes('404')) {
+        if (esiRes.type === 'not_found') {
           return Ok({
             data: null,
             metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },

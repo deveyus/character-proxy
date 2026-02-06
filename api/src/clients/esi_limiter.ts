@@ -8,6 +8,10 @@ let errorLimitReset = 60; // seconds until reset
 let lastUpdate = 0;
 
 export type FetchPriority = 'user' | 'background';
+export type ApiHealth = 'up' | 'degraded' | 'down';
+
+let apiHealth: ApiHealth = 'up';
+let lastHealthCheck = 0;
 
 /**
  * Thresholds for different priorities.
@@ -29,9 +33,36 @@ export function updateLimits(remain: number, reset: number) {
 }
 
 /**
+ * Updates the global API health state.
+ */
+export function updateApiHealth(health: ApiHealth) {
+  apiHealth = health;
+  lastHealthCheck = Date.now();
+  if (health !== 'up') {
+    logger.warn('ESI', `API Health updated to: ${health.toUpperCase()}`);
+  }
+}
+
+/**
+ * Gets the current API health.
+ */
+export function getApiHealth(): ApiHealth {
+  // If health is not 'up', but it's been a while since the last check,
+  // allow a probe (effectively 'up' for the next request).
+  if (apiHealth !== 'up' && Date.now() - lastHealthCheck > 30000) {
+    return 'up';
+  }
+  return apiHealth;
+}
+
+/**
  * Checks if we are currently allowed to make a fetch to ESI at the given priority.
  */
 export function canFetch(priority: FetchPriority = 'user'): boolean {
+  if (apiHealth === 'down' && priority === 'background') {
+    return false;
+  }
+
   const threshold = THRESHOLDS[priority];
 
   if (errorLimitRemain > threshold) {
@@ -67,6 +98,7 @@ export function getLimitState() {
   return {
     remain: errorLimitRemain,
     reset: errorLimitReset,
+    health: apiHealth,
     lastUpdate,
   };
 }

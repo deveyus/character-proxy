@@ -9,6 +9,7 @@ Enhance the ESI client with intelligent retry logic and health monitoring. This 
 ### 1. Exponential Backoff Retries
 
 Implement a retry mechanism for `fetchEntity`:
+
 - **Retryable Errors:** 5xx Server Errors, Network/Timeout errors.
 - **Non-Retryable Errors:** 4xx Request Errors (e.g., 404, 403, 400).
 - **Strategy:** Exponential backoff (e.g., 1s, 2s, 4s).
@@ -23,6 +24,7 @@ Implement a retry mechanism for `fetchEntity`:
 ### 3. Error Classification
 
 Refine the `ESIResponse` to distinguish between types of errors:
+
 - `not_found` (404)
 - `forbidden` (403)
 - `rate_limited` (420/Circuit Breaker)

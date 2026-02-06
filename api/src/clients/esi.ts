@@ -3,7 +3,11 @@ import { canFetch, FetchPriority, updateLimits } from './esi_limiter.ts';
 export type ESIResponse<T> =
   | { status: 'fresh'; data: T; etag: string; expiresAt: Date }
   | { status: 'not_modified'; expiresAt: Date }
-  | { status: 'error'; error: Error };
+  | {
+    status: 'error';
+    error: Error;
+    type: 'not_found' | 'forbidden' | 'rate_limited' | 'server_error' | 'network_error';
+  };
 
 const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
@@ -18,6 +22,7 @@ export async function fetchEntity<T>(
   if (!canFetch(priority)) {
     return {
       status: 'error',
+      type: 'rate_limited',
       error: new Error(`Rate limit circuit breaker active [${priority}]. Local cache only.`),
     };
   }
@@ -45,8 +50,13 @@ export async function fetchEntity<T>(
     }
 
     if (!response.ok) {
+      let type: 'not_found' | 'forbidden' | 'server_error' | 'network_error' = 'server_error';
+      if (response.status === 404) type = 'not_found';
+      if (response.status === 403 || response.status === 401) type = 'forbidden';
+
       return {
         status: 'error',
+        type,
         error: new Error(`ESI returned ${response.status}: ${response.statusText}`),
       };
     }
@@ -63,6 +73,7 @@ export async function fetchEntity<T>(
   } catch (error) {
     return {
       status: 'error',
+      type: 'network_error',
       error: error instanceof Error ? error : new Error(String(error)),
     };
   }

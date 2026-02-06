@@ -21,4 +21,3 @@
 - [x] Task: Run Verification Suite 29463f1
   - [x] Sub-task: Run all tests
   - [x] Sub-task: Run `deno lint` and `deno fmt`
-
