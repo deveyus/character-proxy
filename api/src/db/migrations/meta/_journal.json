@@ -36,6 +36,13 @@
       "when": 1770349904962,
       "tag": "0004_hardened_core_lean_queue",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1770412104943,
+      "tag": "0005_infra_polishing_discovery_tracking",
+      "breakpoints": true
     }
   ]
 }

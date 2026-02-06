@@ -2,15 +2,15 @@
 
 ## Phase 1: DB Schema & Resource Config
 
-- [ ] Task: Schema Migration
-  - [ ] Sub-task: Add `last_discovery_at` to static tables
-  - [ ] Sub-task: Add index on `last_discovery_at`
-- [ ] Task: Connection Pool
-  - [ ] Sub-task: Update `client.ts` to support dynamic pool size via `WORKER_COUNT`
+- [x] Task: Schema Migration 9e82b16
+  - [x] Sub-task: Add `last_discovery_at` to static tables
+  - [x] Sub-task: Add index on `last_discovery_at`
+- [x] Task: Connection Pool 9e82b16
+  - [x] Sub-task: Update `client.ts` to support dynamic pool size via `WORKER_COUNT`
 
 ## Phase 2: Worker Logic Hardening
 
-- [ ] Task: Refactor Worker Processing
+- [~] Task: Refactor Worker Processing
   - [ ] Sub-task: Implement `not_found` immediate deletion
   - [ ] Sub-task: Implement `MAX_ATTEMPTS` check
   - [ ] Sub-task: Handle transient errors without penalty

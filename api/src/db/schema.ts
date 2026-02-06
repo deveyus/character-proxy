@@ -1,4 +1,4 @@
-import { bigint, jsonb, pgTable, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigint, index, jsonb, pgTable, real, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 // --- Characters ---
 export const characterStatic = pgTable('character_static', {
@@ -12,7 +12,10 @@ export const characterStatic = pgTable('character_static', {
   expiresAt: timestamp('expires_at'),
   lastModifiedAt: timestamp('last_modified_at'),
   accessCount: bigint('access_count', { mode: 'number' }).default(0).notNull(),
-});
+  lastDiscoveryAt: timestamp('last_discovery_at'),
+}, (table) => ({
+  lastDiscoveryIdx: index('idx_character_last_discovery').on(table.lastDiscoveryAt),
+}));
 
 export const characterEphemeral = pgTable('character_ephemeral', {
   recordId: uuid('record_id').primaryKey(), // UUIDv7 generated at application level
@@ -37,7 +40,10 @@ export const corporationStatic = pgTable('corporation_static', {
   expiresAt: timestamp('expires_at'),
   lastModifiedAt: timestamp('last_modified_at'),
   accessCount: bigint('access_count', { mode: 'number' }).default(0).notNull(),
-});
+  lastDiscoveryAt: timestamp('last_discovery_at'),
+}, (table) => ({
+  lastDiscoveryIdx: index('idx_corporation_last_discovery').on(table.lastDiscoveryAt),
+}));
 
 export const corporationEphemeral = pgTable('corporation_ephemeral', {
   recordId: uuid('record_id').primaryKey(), // UUIDv7
@@ -63,7 +69,10 @@ export const allianceStatic = pgTable('alliance_static', {
   expiresAt: timestamp('expires_at'),
   lastModifiedAt: timestamp('last_modified_at'),
   accessCount: bigint('access_count', { mode: 'number' }).default(0).notNull(),
-});
+  lastDiscoveryAt: timestamp('last_discovery_at'),
+}, (table) => ({
+  lastDiscoveryIdx: index('idx_alliance_last_discovery').on(table.lastDiscoveryAt),
+}));
 
 export const allianceEphemeral = pgTable('alliance_ephemeral', {
   recordId: uuid('record_id').primaryKey(), // UUIDv7

@@ -8,11 +8,18 @@ import { logger } from '../utils/logger.ts';
 // Configuration
 const DB_NAME = 'character_proxy';
 const connectionString = Deno.env.get('DATABASE_URL');
+const workerCount = parseInt(Deno.env.get('WORKER_COUNT') || '1');
 
 // Primary client for the application
-export const client = connectionString ? postgres(connectionString) : postgres({
-  database: DB_NAME,
-});
+// We scale the pool size based on workers + a buffer for tRPC requests
+const MAX_POOL_SIZE = Math.max(10, workerCount + 10);
+
+export const client = connectionString
+  ? postgres(connectionString, { max: MAX_POOL_SIZE })
+  : postgres({
+    database: DB_NAME,
+    max: MAX_POOL_SIZE,
+  });
 
 export const db = drizzle(client);
 
