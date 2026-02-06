@@ -9,9 +9,9 @@
   - [x] Sub-task: Add `getCharacterCorpHistory` to `api/src/clients/esi.ts`
   - [x] Sub-task: Add `getCorpAllianceHistory` to `api/src/clients/esi.ts`
   - [x] Sub-task: Add `getAllianceMembers` to `api/src/clients/esi.ts`
-- [ ] Task: Bio Parser Utility
-  - [ ] Sub-task: Create `api/src/utils/bio_parser.ts` with regex logic for `showinfo` links
-  - [ ] Sub-task: Write unit tests for `BioParser`
+- [x] Task: Bio Parser Utility a810248
+  - [x] Sub-task: Create `api/src/utils/bio_parser.ts` with regex logic for `showinfo` links
+  - [x] Sub-task: Write unit tests for `BioParser`
 
 ## Phase 2: Discovery Service
 
