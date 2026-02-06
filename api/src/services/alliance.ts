@@ -3,6 +3,8 @@ import * as db from '../db/alliance.ts';
 import { fetchEntity } from '../clients/esi.ts';
 import { FetchPriority } from '../clients/esi_limiter.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
+import { extractFromAlliance } from './discovery/extraction.ts';
+import { logger } from '../utils/logger.ts';
 
 interface ESIAlliance {
   name: string;
@@ -53,6 +55,11 @@ export async function getById(
           allianceId: id,
           executorCorpId: esiRes.data.executor_corporation_id || null,
           memberCount: esiRes.data.member_count,
+        });
+
+        // Trigger discovery analysis (background)
+        extractFromAlliance(id, esiRes.data).catch((err) => {
+          logger.warn('SYSTEM', `Discovery extraction failed for alliance ${id}: ${err.message}`);
         });
 
         const refreshed = await db.resolveById(id);

@@ -26,13 +26,13 @@
 
 ## Phase 3: Integration
 
-- [ ] Task: Service Hooks
-  - [ ] Sub-task: Update `CharacterService.getById` to trigger discovery
-  - [ ] Sub-task: Update `CorporationService.getById` to trigger discovery
-  - [ ] Sub-task: Update `AllianceService.getById` to trigger discovery
-- [ ] Task: Background Worker
-  - [ ] Sub-task: Create a simple polling loop in `api/src/worker.ts` (or similar)
-  - [ ] Sub-task: Integrate worker start into `api/src/main.ts` (non-blocking)
+- [x] Task: Service Hooks 9c700f7
+  - [x] Sub-task: Update `CharacterService.getById` to trigger discovery
+  - [x] Sub-task: Update `CorporationService.getById` to trigger discovery
+  - [x] Sub-task: Update `AllianceService.getById` to trigger discovery
+- [x] Task: Background Worker 9c700f7
+  - [x] Sub-task: Create a simple polling loop in `api/src/services/discovery/worker.ts`
+  - [x] Sub-task: Integrate worker start into `api/src/main.ts` (non-blocking)
 
 ## Phase 4: Verification
 

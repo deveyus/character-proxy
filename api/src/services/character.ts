@@ -4,6 +4,7 @@ import { fetchEntity } from '../clients/esi.ts';
 import { FetchPriority } from '../clients/esi_limiter.ts';
 import { logger } from '../utils/logger.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
+import { extractFromCharacter } from './discovery/extraction.ts';
 
 interface ESICharacter {
   name: string;
@@ -59,6 +60,11 @@ export async function getById(
           corporationId: esiRes.data.corporation_id,
           allianceId: esiRes.data.alliance_id || null,
           securityStatus: esiRes.data.security_status,
+        });
+
+        // Trigger discovery analysis (background)
+        extractFromCharacter(id, esiRes.data).catch((err) => {
+          logger.warn('SYSTEM', `Discovery extraction failed for character ${id}: ${err.message}`);
         });
 
         const refreshed = await db.resolveById(id);

@@ -4,6 +4,7 @@ import { createTRPCContext } from './trpc/context.ts';
 import { db, initializeDatabase } from './db/client.ts';
 import { hydrateNpcCorporations } from './db/hydration/npc_corps.ts';
 import { logger, setupLogger } from './utils/logger.ts';
+import { startDiscoveryWorker } from './services/discovery/worker.ts';
 
 const PORT = parseInt(Deno.env.get('PORT') || '4321');
 
@@ -28,6 +29,11 @@ async function startServer() {
   if (hydrationResult.isErr()) {
     logger.warn('SYSTEM', `NPC corporation hydration failed: ${hydrationResult.error.message}`);
   }
+
+  // Start background discovery worker
+  startDiscoveryWorker().catch((err) => {
+    logger.error('SYSTEM', 'Discovery worker crashed', { error: err });
+  });
 
   Deno.serve({ port: PORT }, (req) => {
     return fetchRequestHandler({
