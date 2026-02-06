@@ -10,12 +10,31 @@ const t = initTRPC.context<Context>().create();
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
+/**
+ * Middleware-protected procedure that requires a valid API key.
+ */
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  const systemKey = Deno.env.get('API_KEY');
+
+  // If no key is configured, allow access (for development)
+  if (!systemKey) return next();
+
+  if (ctx.apiKey !== systemKey) {
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'Invalid or missing API Key',
+    });
+  }
+
+  return next();
+});
+
 export const appRouter = router({
   health: publicProcedure.query(() => {
     return { status: 'ok' };
   }),
 
-  resolveById: publicProcedure
+  resolveById: protectedProcedure
     .input(z.object({
       id: z.number(),
       type: z.enum(['character', 'corporation', 'alliance']),
@@ -49,7 +68,7 @@ export const appRouter = router({
       return result.value;
     }),
 
-  resolveByName: publicProcedure
+  resolveByName: protectedProcedure
     .input(z.object({
       name: z.string(),
       type: z.enum(['character', 'corporation', 'alliance']),

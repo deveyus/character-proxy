@@ -1,6 +1,7 @@
 import { assertEquals } from 'std/assert/mod.ts';
 import { appRouter } from '../../src/trpc/router.ts';
 import { createTRPCContext } from '../../src/trpc/context.ts';
+import { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 import { client, db, initializeDatabase } from '../../src/db/client.ts';
 import * as schema from '../../src/db/schema.ts';
 import { eq } from 'drizzle-orm';
@@ -8,7 +9,9 @@ import { CharacterEntity } from '../../src/db/character.ts';
 
 Deno.test('tRPC Entity Procedures', async (t) => {
   await initializeDatabase();
-  const ctx = createTRPCContext();
+  const ctx = createTRPCContext(
+    { req: new Request('http://localhost') } as unknown as FetchCreateContextFnOptions,
+  );
   const caller = appRouter.createCaller(ctx);
   const originalFetch = globalThis.fetch;
 

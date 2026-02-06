@@ -2,7 +2,7 @@
 
 ## Phase 1: Security & Context
 
-- [ ] Task: API Key Authentication
+- [~] Task: API Key Authentication
   - [ ] Sub-task: Update `api/src/trpc/context.ts` to check `x-api-key` header
   - [ ] Sub-task: Update `api/src/trpc/router.ts` to enforce auth on sensitive procedures
 
