@@ -41,14 +41,12 @@ export async function updateQueueStatus(
   entityId: number,
   entityType: EntityType,
   status: 'pending' | 'processing' | 'completed' | 'failed',
-  attemptsInc = 0,
 ): Promise<void> {
   await db.update(discoveryQueue)
-    .set({ 
-      status, 
+    .set({
+      status,
       updatedAt: new Date(),
-      attempts: attemptsInc > 0 ? (sql => sql`attempts + ${attemptsInc}`) : undefined 
-    } as any) // Drizzle sql tag sometimes tricky in simple set
+    })
     .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
 }
 
@@ -56,29 +54,33 @@ export async function updateQueueStatus(
  * Specialized update for processing state.
  */
 export async function markAsProcessing(entityId: number, entityType: EntityType): Promise<void> {
-    await db.update(discoveryQueue)
-      .set({ status: 'processing', updatedAt: new Date() })
-      .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
+  await db.update(discoveryQueue)
+    .set({ status: 'processing', updatedAt: new Date() })
+    .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
 }
 
 /**
  * Specialized update for completed state.
  */
 export async function markAsCompleted(entityId: number, entityType: EntityType): Promise<void> {
-    await db.update(discoveryQueue)
-      .set({ status: 'completed', updatedAt: new Date() })
-      .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
+  await db.update(discoveryQueue)
+    .set({ status: 'completed', updatedAt: new Date() })
+    .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
 }
 
 /**
  * Specialized update for failed state.
  */
-export async function markAsFailed(entityId: number, entityType: EntityType, currentAttempts: number): Promise<void> {
-    await db.update(discoveryQueue)
-      .set({ 
-        status: 'failed', 
-        attempts: currentAttempts + 1, 
-        updatedAt: new Date() 
-      })
-      .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
+export async function markAsFailed(
+  entityId: number,
+  entityType: EntityType,
+  currentAttempts: number,
+): Promise<void> {
+  await db.update(discoveryQueue)
+    .set({
+      status: 'failed',
+      attempts: currentAttempts + 1,
+      updatedAt: new Date(),
+    })
+    .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
 }

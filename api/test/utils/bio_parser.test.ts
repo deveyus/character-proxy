@@ -28,8 +28,8 @@ Deno.test('BioParser - parseBioLinks', async (t) => {
     `;
     const results = parseBioLinks(bio);
     assertEquals(results.length, 2);
-    assertEquals(results.some(r => r.id === 123 && r.type === 'character'), true);
-    assertEquals(results.some(r => r.id === 456 && r.type === 'corporation'), true);
+    assertEquals(results.some((r) => r.id === 123 && r.type === 'character'), true);
+    assertEquals(results.some((r) => r.id === 456 && r.type === 'corporation'), true);
   });
 
   await t.step('should ignore unknown typeIDs', () => {

@@ -36,5 +36,7 @@ export function parseBioLinks(text: string): DiscoveryMatch[] {
   }
 
   // Deduplicate matches
-  return matches.filter((v, i, a) => a.findIndex((t) => (t.id === v.id && t.type === v.type)) === i);
+  return matches.filter((v, i, a) =>
+    a.findIndex((t) => (t.id === v.id && t.type === v.type)) === i
+  );
 }

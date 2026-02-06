@@ -59,7 +59,10 @@ export async function getById(
 
         // Trigger discovery analysis (background)
         extractFromCorporation(id, esiRes.data).catch((err) => {
-          logger.warn('SYSTEM', `Discovery extraction failed for corporation ${id}: ${err.message}`);
+          logger.warn(
+            'SYSTEM',
+            `Discovery extraction failed for corporation ${id}: ${err.message}`,
+          );
         });
 
         const refreshed = await db.resolveById(id);
@@ -75,7 +78,9 @@ export async function getById(
             },
           });
         }
-      } else if (esiRes.status === 'not_modified' && localEntity) {
+      }
+
+      if (esiRes.status === 'not_modified' && localEntity) {
         await db.upsertStatic({
           ...localEntity,
           expiresAt: esiRes.expiresAt,
@@ -94,7 +99,9 @@ export async function getById(
             },
           });
         }
-      } else if (esiRes.status === 'error') {
+      }
+
+      if (esiRes.status === 'error') {
         if (esiRes.error.message.includes('404')) {
           return Ok({
             data: null,

@@ -2,7 +2,7 @@
 
 ## Phase 1: Service Layer Refactoring
 
-- [ ] Task: Refactor Character Service
+- [~] Task: Refactor Character Service
   - [ ] Sub-task: Update `api/src/services/character.ts` to use early returns for ESI response handling
 - [ ] Task: Refactor Corporation Service
   - [ ] Sub-task: Update `api/src/services/corporation.ts` to use early returns

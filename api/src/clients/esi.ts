@@ -84,27 +84,35 @@ export interface AllianceHistoryEntry {
 /**
  * Fetches a character's corporation history.
  */
-export async function getCharacterCorpHistory(
+export function getCharacterCorpHistory(
   characterId: number,
   priority: FetchPriority = 'background',
 ): Promise<ESIResponse<CorpHistoryEntry[]>> {
-  return fetchEntity<CorpHistoryEntry[]>(`/characters/${characterId}/corporationhistory/`, null, priority);
+  return fetchEntity<CorpHistoryEntry[]>(
+    `/characters/${characterId}/corporationhistory/`,
+    null,
+    priority,
+  );
 }
 
 /**
  * Fetches a corporation's alliance history.
  */
-export async function getCorpAllianceHistory(
+export function getCorpAllianceHistory(
   corporationId: number,
   priority: FetchPriority = 'background',
 ): Promise<ESIResponse<AllianceHistoryEntry[]>> {
-  return fetchEntity<AllianceHistoryEntry[]>(`/corporations/${corporationId}/alliancehistory/`, null, priority);
+  return fetchEntity<AllianceHistoryEntry[]>(
+    `/corporations/${corporationId}/alliancehistory/`,
+    null,
+    priority,
+  );
 }
 
 /**
  * Fetches an alliance's member corporations.
  */
-export async function getAllianceMembers(
+export function getAllianceMembers(
   allianceId: number,
   priority: FetchPriority = 'background',
 ): Promise<ESIResponse<number[]>> {

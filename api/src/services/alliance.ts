@@ -75,7 +75,9 @@ export async function getById(
             },
           });
         }
-      } else if (esiRes.status === 'not_modified' && localEntity) {
+      }
+
+      if (esiRes.status === 'not_modified' && localEntity) {
         await db.upsertStatic({
           ...localEntity,
           expiresAt: esiRes.expiresAt,
@@ -94,7 +96,9 @@ export async function getById(
             },
           });
         }
-      } else if (esiRes.status === 'error') {
+      }
+
+      if (esiRes.status === 'error') {
         if (esiRes.error.message.includes('404')) {
           return Ok({
             data: null,

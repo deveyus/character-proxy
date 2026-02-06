@@ -25,10 +25,19 @@ export const appRouter = router({
       let result;
       if (input.type === 'character') {
         result = await characterService.getById(input.id, input.maxAge);
-      } else if (input.type === 'corporation') {
+      }
+      if (input.type === 'corporation') {
         result = await corporationService.getById(input.id, input.maxAge);
-      } else {
+      }
+      if (input.type === 'alliance') {
         result = await allianceService.getById(input.id, input.maxAge);
+      }
+
+      if (!result) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Unknown entity type: ${input.type}`,
+        });
       }
 
       if (result.isErr()) {
@@ -50,10 +59,19 @@ export const appRouter = router({
       let result;
       if (input.type === 'character') {
         result = await characterService.getByName(input.name, input.maxAge);
-      } else if (input.type === 'corporation') {
+      }
+      if (input.type === 'corporation') {
         result = await corporationService.getByName(input.name, input.maxAge);
-      } else {
+      }
+      if (input.type === 'alliance') {
         result = await allianceService.getByName(input.name, input.maxAge);
+      }
+
+      if (!result) {
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: `Unknown entity type: ${input.type}`,
+        });
       }
 
       if (result.isErr()) {

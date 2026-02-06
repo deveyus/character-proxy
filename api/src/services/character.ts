@@ -81,7 +81,9 @@ export async function getById(
             },
           });
         }
-      } else if (esiRes.status === 'not_modified' && localEntity) {
+      }
+
+      if (esiRes.status === 'not_modified' && localEntity) {
         // 304 Not Modified
         await db.upsertStatic({
           ...localEntity,
@@ -102,7 +104,9 @@ export async function getById(
             },
           });
         }
-      } else if (esiRes.status === 'error') {
+      }
+
+      if (esiRes.status === 'error') {
         // Fallback to stale
         if (esiRes.error.message.includes('404')) {
           return Ok({

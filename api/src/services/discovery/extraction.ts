@@ -1,12 +1,36 @@
 import { addToQueue } from './queue.ts';
-import { getCharacterCorpHistory, getCorpAllianceHistory, getAllianceMembers } from '../../clients/esi.ts';
+import {
+  getAllianceMembers,
+  getCharacterCorpHistory,
+  getCorpAllianceHistory,
+} from '../../clients/esi.ts';
 import { parseBioLinks } from '../../utils/bio_parser.ts';
-import { logger } from '../../utils/logger.ts';
+
+interface CharacterDiscoveryData {
+  corporation_id: number;
+  alliance_id?: number;
+}
+
+interface CorporationDiscoveryData {
+  ceo_id: number;
+  creator_id?: number;
+  alliance_id?: number;
+  description?: string;
+}
+
+interface AllianceDiscoveryData {
+  creator_id: number;
+  executor_corporation_id?: number;
+  description?: string;
+}
 
 /**
  * Analyzes a Character and queues related entities.
  */
-export async function extractFromCharacter(id: number, data: any): Promise<void> {
+export async function extractFromCharacter(
+  id: number,
+  data: CharacterDiscoveryData,
+): Promise<void> {
   if (data.corporation_id) await addToQueue(data.corporation_id, 'corporation');
   if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
@@ -21,7 +45,10 @@ export async function extractFromCharacter(id: number, data: any): Promise<void>
 /**
  * Analyzes a Corporation and queues related entities.
  */
-export async function extractFromCorporation(id: number, data: any): Promise<void> {
+export async function extractFromCorporation(
+  id: number,
+  data: CorporationDiscoveryData,
+): Promise<void> {
   if (data.ceo_id) await addToQueue(data.ceo_id, 'character');
   if (data.creator_id) await addToQueue(data.creator_id, 'character');
   if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
@@ -42,7 +69,7 @@ export async function extractFromCorporation(id: number, data: any): Promise<voi
 /**
  * Analyzes an Alliance and queues related entities.
  */
-export async function extractFromAlliance(id: number, data: any): Promise<void> {
+export async function extractFromAlliance(id: number, data: AllianceDiscoveryData): Promise<void> {
   if (data.creator_id) await addToQueue(data.creator_id, 'character');
   if (data.executor_corporation_id) await addToQueue(data.executor_corporation_id, 'corporation');
 
