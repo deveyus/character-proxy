@@ -71,3 +71,16 @@ export const allianceEphemeral = pgTable('alliance_ephemeral', {
   memberCount: bigint('member_count', { mode: 'number' }).notNull(),
   recordedAt: timestamp('recorded_at').defaultNow().notNull(),
 });
+
+// --- Discovery Queue ---
+export const discoveryQueue = pgTable('discovery_queue', {
+  entityId: bigint('entity_id', { mode: 'number' }).notNull(),
+  entityType: text('entity_type', { enum: ['character', 'corporation', 'alliance'] }).notNull(),
+  status: text('status', { enum: ['pending', 'processing', 'completed', 'failed'] }).default('pending')
+    .notNull(),
+  attempts: bigint('attempts', { mode: 'number' }).default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => ({
+  pk: { columns: [table.entityId, table.entityType] },
+}));

@@ -15,6 +15,13 @@
       "when": 1770273474562,
       "tag": "0001_cool_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770336142898,
+      "tag": "0002_discovery_queue_init",
+      "breakpoints": true
     }
   ]
 }

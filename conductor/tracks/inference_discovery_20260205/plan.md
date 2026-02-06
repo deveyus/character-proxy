@@ -2,9 +2,9 @@
 
 ## Phase 1: Infrastructure & Schema
 
-- [ ] Task: Database Schema
-  - [ ] Sub-task: Create migration for `discovery_queue` table
-  - [ ] Sub-task: Run migration
+- [x] Task: Database Schema
+  - [x] Sub-task: Create migration for `discovery_queue` table
+  - [x] Sub-task: Run migration
 - [ ] Task: ESI Client Expansion
   - [ ] Sub-task: Add `getCharacterCorpHistory` to `api/src/clients/esi.ts`
   - [ ] Sub-task: Add `getCorpAllianceHistory` to `api/src/clients/esi.ts`
