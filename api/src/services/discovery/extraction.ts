@@ -5,6 +5,9 @@ import {
   getCorpAllianceHistory,
 } from '../../clients/esi.ts';
 import { parseBioLinks } from '../../utils/bio_parser.ts';
+import { db as pg } from '../../db/client.ts';
+import { allianceStatic, characterStatic, corporationStatic } from '../../db/schema.ts';
+import { eq } from 'drizzle-orm';
 
 interface CharacterDiscoveryData {
   corporation_id: number;
@@ -40,6 +43,11 @@ export async function extractFromCharacter(
       await addToQueue(entry.corporation_id, 'corporation');
     }
   }
+
+  // Update last discovery timestamp
+  await pg.update(characterStatic)
+    .set({ lastDiscoveryAt: new Date() })
+    .where(eq(characterStatic.characterId, id));
 }
 
 /**
@@ -64,6 +72,11 @@ export async function extractFromCorporation(
   for (const link of links) {
     await addToQueue(link.id, link.type);
   }
+
+  // Update last discovery timestamp
+  await pg.update(corporationStatic)
+    .set({ lastDiscoveryAt: new Date() })
+    .where(eq(corporationStatic.corporationId, id));
 }
 
 /**
@@ -84,4 +97,9 @@ export async function extractFromAlliance(id: number, data: AllianceDiscoveryDat
   for (const link of links) {
     await addToQueue(link.id, link.type);
   }
+
+  // Update last discovery timestamp
+  await pg.update(allianceStatic)
+    .set({ lastDiscoveryAt: new Date() })
+    .where(eq(allianceStatic.allianceId, id));
 }
