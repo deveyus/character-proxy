@@ -67,3 +67,46 @@ export async function fetchEntity<T>(
     };
   }
 }
+
+export interface CorpHistoryEntry {
+  corporation_id: number;
+  record_id: number;
+  start_date: string;
+  is_deleted?: boolean;
+}
+
+export interface AllianceHistoryEntry {
+  alliance_id: number;
+  start_date: string;
+  is_deleted?: boolean;
+}
+
+/**
+ * Fetches a character's corporation history.
+ */
+export async function getCharacterCorpHistory(
+  characterId: number,
+  priority: FetchPriority = 'background',
+): Promise<ESIResponse<CorpHistoryEntry[]>> {
+  return fetchEntity<CorpHistoryEntry[]>(`/characters/${characterId}/corporationhistory/`, null, priority);
+}
+
+/**
+ * Fetches a corporation's alliance history.
+ */
+export async function getCorpAllianceHistory(
+  corporationId: number,
+  priority: FetchPriority = 'background',
+): Promise<ESIResponse<AllianceHistoryEntry[]>> {
+  return fetchEntity<AllianceHistoryEntry[]>(`/corporations/${corporationId}/alliancehistory/`, null, priority);
+}
+
+/**
+ * Fetches an alliance's member corporations.
+ */
+export async function getAllianceMembers(
+  allianceId: number,
+  priority: FetchPriority = 'background',
+): Promise<ESIResponse<number[]>> {
+  return fetchEntity<number[]>(`/alliances/${allianceId}/corporations/`, null, priority);
+}

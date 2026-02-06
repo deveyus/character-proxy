@@ -5,10 +5,10 @@
 - [x] Task: Database Schema
   - [x] Sub-task: Create migration for `discovery_queue` table
   - [x] Sub-task: Run migration
-- [ ] Task: ESI Client Expansion
-  - [ ] Sub-task: Add `getCharacterCorpHistory` to `api/src/clients/esi.ts`
-  - [ ] Sub-task: Add `getCorpAllianceHistory` to `api/src/clients/esi.ts`
-  - [ ] Sub-task: Add `getAllianceMembers` to `api/src/clients/esi.ts`
+- [x] Task: ESI Client Expansion 611634b
+  - [x] Sub-task: Add `getCharacterCorpHistory` to `api/src/clients/esi.ts`
+  - [x] Sub-task: Add `getCorpAllianceHistory` to `api/src/clients/esi.ts`
+  - [x] Sub-task: Add `getAllianceMembers` to `api/src/clients/esi.ts`
 - [ ] Task: Bio Parser Utility
   - [ ] Sub-task: Create `api/src/utils/bio_parser.ts` with regex logic for `showinfo` links
   - [ ] Sub-task: Write unit tests for `BioParser`
