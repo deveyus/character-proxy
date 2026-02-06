@@ -4,6 +4,7 @@ import * as corporationService from '../corporation.ts';
 import * as allianceService from '../alliance.ts';
 import { getNextPendingItem, markAsCompleted, markAsFailed, markAsProcessing } from './queue.ts';
 import { Err, Ok, Result } from 'ts-results-es';
+import { getApiHealth } from '../../clients/esi_limiter.ts';
 
 export type EntityType = 'character' | 'corporation' | 'alliance';
 
@@ -12,6 +13,10 @@ export type EntityType = 'character' | 'corporation' | 'alliance';
  */
 export async function processQueueItem(): Promise<Result<boolean, Error>> {
   try {
+    if (getApiHealth() === 'down') {
+      return Ok(false);
+    }
+
     const item = await getNextPendingItem();
     if (!item) return Ok(false);
 
