@@ -17,6 +17,7 @@ interface ESIAlliance {
   faction_id?: number;
   executor_corporation_id?: number;
   member_count: number;
+  date_terminated?: string;
 }
 
 /**
@@ -59,7 +60,8 @@ export async function getById(
             dateFounded: esiRes.data.date_founded ? new Date(esiRes.data.date_founded) : null,
             creatorId: esiRes.data.creator_id,
             creatorCorporationId: esiRes.data.creator_corporation_id,
-            factionId: esiRes.data.faction_id ?? null,
+            factionId: esiRes.data.faction_id || null,
+            terminatedAt: esiRes.data.date_terminated ? new Date(esiRes.data.date_terminated) : null,
             etag: esiRes.etag,
             expiresAt: esiRes.expiresAt,
             lastModifiedAt: new Date(),
@@ -120,9 +122,35 @@ export async function getById(
 
       if (esiRes.status === 'error') {
         if (esiRes.type === 'not_found') {
+          if (localEntity) {
+            logger.info('ESI', `Alliance ${id} no longer exists, marking as terminated.`);
+            await db.upsertStatic({
+              ...localEntity,
+              terminatedAt: new Date(),
+              lastModifiedAt: new Date(),
+            });
+            const refreshed = await db.resolveById(id);
+            if (refreshed.isErr()) return refreshed;
+            localEntity = refreshed.value;
+
+            if (localEntity) {
+              return Ok({
+                data: localEntity,
+                metadata: {
+                  source: 'fresh',
+                  expiresAt: localEntity.expiresAt!,
+                  lastModifiedAt: localEntity.lastModifiedAt!,
+                },
+              });
+            }
+          }
           return Ok({
             data: null,
-            metadata: { source: 'stale', expiresAt: new Date(0), lastModifiedAt: new Date(0) },
+            metadata: {
+              source: 'stale',
+              expiresAt: new Date(0),
+              lastModifiedAt: new Date(0),
+            },
           });
         }
         if (localEntity) {

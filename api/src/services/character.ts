@@ -18,6 +18,7 @@ interface ESICharacter {
   corporation_id: number;
   alliance_id?: number;
   security_status: number;
+  description?: string;
 }
 
 /**
@@ -67,6 +68,7 @@ export async function getById(
             etag: esiRes.etag,
             expiresAt: esiRes.expiresAt,
             lastModifiedAt: new Date(),
+            terminatedAt: null,
             accessCount: localEntity?.accessCount ?? 0,
             lastDiscoveryAt: localEntity?.lastDiscoveryAt ?? null,
           }, tx);
@@ -127,8 +129,30 @@ export async function getById(
       }
 
       if (esiRes.status === 'error') {
-        // Fallback to stale
+        // Handle 404 for known characters
         if (esiRes.type === 'not_found') {
+          if (localEntity) {
+            logger.info('ESI', `Character ${id} no longer exists, marking as terminated.`);
+            await db.upsertStatic({
+              ...localEntity,
+              terminatedAt: new Date(),
+              lastModifiedAt: new Date(),
+            });
+            const refreshed = await db.resolveById(id);
+            if (refreshed.isErr()) return refreshed;
+            localEntity = refreshed.value;
+
+            if (localEntity) {
+              return Ok({
+                data: localEntity,
+                metadata: {
+                  source: 'fresh',
+                  expiresAt: localEntity.expiresAt!,
+                  lastModifiedAt: localEntity.lastModifiedAt!,
+                },
+              });
+            }
+          }
           return Ok({
             data: null,
             metadata: {

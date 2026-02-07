@@ -22,6 +22,7 @@ export const ESICorporationSchema = z.object({
   ceo_id: z.number(),
   member_count: z.number(),
   description: z.string().optional(),
+  date_terminated: z.string().optional(),
 });
 
 export const ESIAllianceSchema = z.object({
@@ -34,6 +35,7 @@ export const ESIAllianceSchema = z.object({
   executor_corporation_id: z.number().optional(),
   member_count: z.number(),
   description: z.string().optional(),
+  date_terminated: z.string().optional(),
 });
 
 export const ESICorpHistorySchema = z.array(z.object({

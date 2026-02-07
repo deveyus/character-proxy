@@ -17,6 +17,7 @@ export const migration: Migration = {
         etag TEXT,
         expires_at TIMESTAMP,
         last_modified_at TIMESTAMP,
+        terminated_at TIMESTAMP,
         access_count BIGINT DEFAULT 0 NOT NULL,
         last_discovery_at TIMESTAMP
       )
@@ -46,6 +47,7 @@ export const migration: Migration = {
         etag TEXT,
         expires_at TIMESTAMP,
         last_modified_at TIMESTAMP,
+        terminated_at TIMESTAMP,
         access_count BIGINT DEFAULT 0 NOT NULL,
         last_discovery_at TIMESTAMP
       )
@@ -76,6 +78,7 @@ export const migration: Migration = {
         etag TEXT,
         expires_at TIMESTAMP,
         last_modified_at TIMESTAMP,
+        terminated_at TIMESTAMP,
         access_count BIGINT DEFAULT 0 NOT NULL,
         last_discovery_at TIMESTAMP
       )

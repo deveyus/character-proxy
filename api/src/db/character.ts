@@ -20,6 +20,7 @@ export const CharacterStaticSchema = z.object({
   gender: z.string(),
   raceId: DbBigIntSchema,
   bloodlineId: DbBigIntSchema,
+  terminatedAt: z.date().nullable(),
 }).merge(EsiCacheSchema).merge(DiscoveryTrackingSchema);
 
 export const CharacterEphemeralSchema = z.object({
@@ -54,6 +55,7 @@ export async function resolveById(id: number): Promise<Result<CharacterEntity | 
         s.etag,
         s.expires_at as "expiresAt",
         s.last_modified_at as "lastModifiedAt",
+        s.terminated_at as "terminatedAt",
         s.access_count as "accessCount",
         s.last_discovery_at as "lastDiscoveryAt",
         e.record_id as "recordId",
@@ -89,6 +91,7 @@ export async function resolveByName(name: string): Promise<Result<CharacterEntit
         s.etag,
         s.expires_at as "expiresAt",
         s.last_modified_at as "lastModifiedAt",
+        s.terminated_at as "terminatedAt",
         s.access_count as "accessCount",
         s.last_discovery_at as "lastDiscoveryAt",
         e.record_id as "recordId",
@@ -119,10 +122,10 @@ export async function upsertStatic(
     await tx`
       INSERT INTO character_static (
         character_id, name, birthday, gender, race_id, bloodline_id, 
-        etag, expires_at, last_modified_at, access_count, last_discovery_at
+        etag, expires_at, last_modified_at, terminated_at, access_count, last_discovery_at
       ) VALUES (
         ${values.characterId}, ${values.name}, ${values.birthday}, ${values.gender}, ${values.raceId}, ${values.bloodlineId},
-        ${values.etag}, ${values.expiresAt}, ${values.lastModifiedAt}, ${values.accessCount}, ${values.lastDiscoveryAt}
+        ${values.etag}, ${values.expiresAt}, ${values.lastModifiedAt}, ${values.terminatedAt}, ${values.accessCount}, ${values.lastDiscoveryAt}
       )
       ON CONFLICT (character_id) DO UPDATE SET
         name = EXCLUDED.name,
@@ -133,6 +136,7 @@ export async function upsertStatic(
         etag = EXCLUDED.etag,
         expires_at = EXCLUDED.expires_at,
         last_modified_at = EXCLUDED.last_modified_at,
+        terminated_at = EXCLUDED.terminated_at,
         access_count = EXCLUDED.access_count,
         last_discovery_at = EXCLUDED.last_discovery_at
     `;
