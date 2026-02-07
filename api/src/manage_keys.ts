@@ -32,7 +32,7 @@ async function main() {
         ORDER BY created_at DESC
       `;
       console.log('--- ACTIVE API KEYS ---');
-      console.table(keys.map(k => ({
+      console.table(keys.map((k) => ({
         id: k.id,
         name: k.name,
         prefix: k.keyPrefix,

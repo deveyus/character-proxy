@@ -15,20 +15,24 @@ export type SystemState = z.infer<typeof SystemStateSchema>;
 
 /**
  * Persists a key-value pair to the system state table.
- * 
+ *
  * Side-Effects: Performs an UPSERT into the `system_state` table.
  * Performance: Medium -- DB Write
  * Stores the value as a JSONB object. Use sparingly for high-frequency updates.
- * 
+ *
  * @param {string} key - Unique identifier for the state entry.
  * @param {unknown} value - Data to persist (will be JSON serialized).
  * @param {Tx} [tx=sql] - Optional transaction context.
  * @returns {Promise<Result<void, Error>>} Success or database error.
- * 
+ *
  * @example
  * await setState('last_sync_time', { timestamp: Date.now() });
  */
-export async function setState(key: string, value: unknown, tx: Tx = sql): Promise<Result<void, Error>> {
+export async function setState(
+  key: string,
+  value: unknown,
+  tx: Tx = sql,
+): Promise<Result<void, Error>> {
   return await wrapAsync(async () => {
     // deno-lint-ignore no-explicit-any
     const jsonValue = sql.json(value as any);
@@ -44,13 +48,13 @@ export async function setState(key: string, value: unknown, tx: Tx = sql): Promi
 
 /**
  * Retrieves a value from the system state table.
- * 
+ *
  * Performance: Low -- DB Read
- * 
+ *
  * @template T
  * @param {string} key - Identifier for the state entry to retrieve.
  * @returns {Promise<Result<T | null, Error>>} The parsed value, null if not found, or database error.
- * 
+ *
  * @example
  * const result = await getState<{ timestamp: number }>('last_sync_time');
  * if (result.isOk() && result.value) {
@@ -67,7 +71,7 @@ export async function getState<T>(key: string): Promise<Result<T | null, Error>>
     `;
 
     if (rows.length === 0) return null;
-    
+
     // We don't use the full SystemStateSchema.parse here because we only need the value
     // and T might be a specific type the caller expects.
     return rows[0].value as T;

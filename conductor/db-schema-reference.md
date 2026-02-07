@@ -5,7 +5,9 @@ This document captures the PostgreSQL database schema as of February 6, 2026, be
 ## Tables
 
 ### `character_static`
+
 Stores relatively static data for EVE Characters.
+
 - `character_id` (BIGINT): Primary Key.
 - `name` (TEXT): Not NULL.
 - `birthday` (TIMESTAMP): Not NULL.
@@ -21,7 +23,9 @@ Stores relatively static data for EVE Characters.
   - `idx_character_last_discovery` on `last_discovery_at`.
 
 ### `character_ephemeral`
+
 Historical ledger for dynamic character data.
+
 - `record_id` (UUID): Primary Key (UUIDv7).
 - `character_id` (BIGINT): Foreign Key to `character_static.character_id`.
 - `corporation_id` (BIGINT): Not NULL.
@@ -30,6 +34,7 @@ Historical ledger for dynamic character data.
 - `recorded_at` (TIMESTAMP): Default NOW(), Not NULL.
 
 ### `corporation_static`
+
 - `corporation_id` (BIGINT): Primary Key.
 - `name` (TEXT): Not NULL.
 - `ticker` (TEXT): Not NULL.
@@ -45,6 +50,7 @@ Historical ledger for dynamic character data.
   - `idx_corporation_last_discovery` on `last_discovery_at`.
 
 ### `corporation_ephemeral`
+
 - `record_id` (UUID): Primary Key.
 - `corporation_id` (BIGINT): Foreign Key to `corporation_static.corporation_id`.
 - `alliance_id` (BIGINT).
@@ -53,6 +59,7 @@ Historical ledger for dynamic character data.
 - `recorded_at` (TIMESTAMP): Default NOW(), Not NULL.
 
 ### `alliance_static`
+
 - `alliance_id` (BIGINT): Primary Key.
 - `name` (TEXT): Not NULL.
 - `ticker` (TEXT): Not NULL.
@@ -69,6 +76,7 @@ Historical ledger for dynamic character data.
   - `idx_alliance_last_discovery` on `last_discovery_at`.
 
 ### `alliance_ephemeral`
+
 - `record_id` (UUID): Primary Key.
 - `alliance_id` (BIGINT): Foreign Key to `alliance_static.alliance_id`.
 - `executor_corp_id` (BIGINT).
@@ -76,7 +84,9 @@ Historical ledger for dynamic character data.
 - `recorded_at` (TIMESTAMP): Default NOW(), Not NULL.
 
 ### `discovery_queue`
+
 Discovery/Crawl task queue.
+
 - `entity_id` (BIGINT): Not NULL.
 - `entity_type` (TEXT): enum ('character', 'corporation', 'alliance'). Not NULL.
 - `attempts` (BIGINT): Default 0, Not NULL.
@@ -86,13 +96,17 @@ Discovery/Crawl task queue.
 - **Primary Key:** (`entity_id`, `entity_type`).
 
 ### `system_state`
+
 Generic KV store for system persistence (e.g., ESI limiter state).
+
 - `key` (TEXT): Primary Key.
 - `value` (JSONB): Not NULL.
 - `updated_at` (TIMESTAMP): Default NOW(), Not NULL.
 
 ### `api_keys`
+
 Application API keys.
+
 - `id` (UUID): Primary Key.
 - `key_hash` (TEXT): SHA-512 hash. Not NULL.
 - `key_prefix` (TEXT): First 8 chars. Not NULL.

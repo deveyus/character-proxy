@@ -14,14 +14,14 @@ const TYPE_MAP: Record<string, 'character' | 'corporation' | 'alliance'> = {
 
 /**
  * Extracts EVE Online `showinfo:` links from raw HTML or text.
- * 
+ *
  * Performance: Low -- Regex Scan
- * Scans the provided text using a global regular expression. Deduplicates matches 
+ * Scans the provided text using a global regular expression. Deduplicates matches
  * before returning.
- * 
+ *
  * @param {string} text - The raw text or HTML (e.g., a character bio) to scan.
  * @returns {DiscoveryMatch[]} A list of unique discovered entity IDs and their types.
- * 
+ *
  * @example
  * const links = parseBioLinks('<a href="showinfo:1373//2112024646">Me</a>');
  * // Returns [{ id: 2112024646, type: 'character' }]

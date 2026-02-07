@@ -13,10 +13,10 @@ const LOCK_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
  * Adds an entity to the discovery queue for eventual crawling.
- * 
- * Side-Effects: Performs a database INSERT into `discovery_queue` with 
+ *
+ * Side-Effects: Performs a database INSERT into `discovery_queue` with
  * ON CONFLICT DO NOTHING.
- * 
+ *
  * @param {number} entityId - The EVE ID of the target entity.
  * @param {EntityType} entityType - The category of the entity.
  * @returns {Promise<Result<void, Error>>} Success or database error.
@@ -41,16 +41,16 @@ export async function addToQueue(
 
 /**
  * Performs an atomic claim of the most urgent pending task from the queue.
- * 
+ *
  * Logic:
  * 1. Finds one unlocked item or item with an expired lock.
  * 2. Joins with static tables to calculate urgency based on the intelligent priority formula.
  * 3. Uses `SKIP LOCKED` to allow multiple concurrent workers without contention.
  * 4. Atomically updates the `locked_until` timestamp.
- * 
+ *
  * Performance: Medium -- DB Order By
  * Executes a complex join and calculation over the active queue.
- * 
+ *
  * @returns {Promise<Object | null>} The claimed task data or null if the queue is empty.
  */
 export async function claimTask() {
@@ -98,9 +98,9 @@ export async function claimTask() {
 
 /**
  * Returns the total number of tasks currently residing in the queue.
- * 
+ *
  * Performance: Low -- DB Count
- * 
+ *
  * @returns {Promise<number>} Total count of queue entries.
  */
 export async function getQueueDepth(): Promise<number> {
@@ -110,9 +110,9 @@ export async function getQueueDepth(): Promise<number> {
 
 /**
  * Removes a task from the queue upon successful processing.
- * 
+ *
  * Side-Effects: Performs a database DELETE on `discovery_queue`.
- * 
+ *
  * @param {number} entityId - Target entity EVE ID.
  * @param {EntityType} entityType - Target entity category.
  */
@@ -125,10 +125,10 @@ export async function markAsCompleted(entityId: number, entityType: EntityType):
 
 /**
  * Releases a failed task back into the queue for future retry.
- * 
- * Side-Effects: Performs a database UPDATE, incrementing the attempt counter 
+ *
+ * Side-Effects: Performs a database UPDATE, incrementing the attempt counter
  * and clearing the lock.
- * 
+ *
  * @param {number} entityId - Target entity EVE ID.
  * @param {EntityType} entityType - Target entity category.
  * @param {number} currentAttempts - Current failure count for this task.

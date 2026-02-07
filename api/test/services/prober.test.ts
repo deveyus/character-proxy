@@ -23,9 +23,14 @@ Deno.test('Discovery - Prober Service', async (t) => {
     // 2. Mock ESI /universe/names/ to return ID 101 as a character
     globalThis.fetch = ((url: string) => {
       if (url.includes('/universe/names/')) {
-        return Promise.resolve(new Response(JSON.stringify([
-          { id: 101, category: 'character', name: 'Valid Gap Character' }
-        ]), { status: 200 }));
+        return Promise.resolve(
+          new Response(
+            JSON.stringify([
+              { id: 101, category: 'character', name: 'Valid Gap Character' },
+            ]),
+            { status: 200 },
+          ),
+        );
       }
       return Promise.resolve(new Response(null, { status: 404 }));
     }) as typeof fetch;

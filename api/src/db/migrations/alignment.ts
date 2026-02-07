@@ -10,7 +10,7 @@ import { AllianceStaticSchema } from '../alliance.ts';
  * Converts a camelCase string to snake_case.
  */
 function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
 }
 
 /**
@@ -32,21 +32,30 @@ function getZodKeys(schema: z.ZodTypeAny): string[] {
 /**
  * Validates that the database table structure matches a given Zod schema.
  */
-async function validateTableSchema(tableName: string, schema: z.ZodTypeAny): Promise<Result<void, Error>> {
+async function validateTableSchema(
+  tableName: string,
+  schema: z.ZodTypeAny,
+): Promise<Result<void, Error>> {
   try {
     // We query one row (or zero) to get the column names returned by the driver
     const rows = await sql`SELECT * FROM ${sql(tableName)} LIMIT 0`;
-    const dbColumns = rows.columns.map(c => c.name);
-    
+    const dbColumns = rows.columns.map((c) => c.name);
+
     // Get keys from Zod schema and convert to snake_case for comparison
     const schemaKeys = [...new Set(getZodKeys(schema))];
     const expectedColumns = schemaKeys.map(toSnakeCase);
-    
+
     // We check if all expected columns exist in the database.
-    const missingInDb = expectedColumns.filter(col => !dbColumns.includes(col));
-    
+    const missingInDb = expectedColumns.filter((col) => !dbColumns.includes(col));
+
     if (missingInDb.length > 0) {
-      return Err(new Error(`Table '${tableName}' is missing columns expected by Zod schema: ${missingInDb.join(', ')}`));
+      return Err(
+        new Error(
+          `Table '${tableName}' is missing columns expected by Zod schema: ${
+            missingInDb.join(', ')
+          }`,
+        ),
+      );
     }
 
     return Ok(void 0);

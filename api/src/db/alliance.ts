@@ -41,11 +41,11 @@ export type AllianceEntity = z.infer<typeof AllianceEntitySchema>;
 
 /**
  * Resolves an alliance by its unique EVE Online ID.
- * 
+ *
  * Performance: Medium -- DB Join
- * Performs an INNER JOIN between `alliance_static` and the latest record 
+ * Performs an INNER JOIN between `alliance_static` and the latest record
  * in `alliance_ephemeral`.
- * 
+ *
  * @param {number} id - The EVE ID of the alliance.
  * @returns {Promise<Result<AllianceEntity | null, Error>>} The alliance data or null if not indexed.
  */
@@ -84,10 +84,10 @@ export async function resolveById(id: number): Promise<Result<AllianceEntity | n
 
 /**
  * Resolves an alliance by its name.
- * 
+ *
  * Performance: Medium -- DB Join
  * Uses a B-Tree index on the name column for efficient retrieval.
- * 
+ *
  * @param {string} name - The exact name of the alliance.
  * @returns {Promise<Result<AllianceEntity | null, Error>>} The alliance data or null if not indexed.
  */
@@ -126,10 +126,10 @@ export async function resolveByName(name: string): Promise<Result<AllianceEntity
 
 /**
  * Atomic UPSERT of static alliance identity data.
- * 
+ *
  * Side-Effects: Writes to `alliance_static` table.
  * Performance: Low -- DB Write
- * 
+ *
  * @param {AllianceStatic} values - The static identity fields to persist.
  * @param {Tx} [tx=sql] - Optional database or transaction client.
  * @returns {Promise<Result<void, Error>>} Success or database error.
@@ -166,10 +166,10 @@ export async function upsertStatic(
 
 /**
  * Appends a new point-in-time snapshot to the alliance historical ledger.
- * 
+ *
  * Side-Effects: Writes a new UUIDv7-indexed row to `alliance_ephemeral`.
  * Performance: Low -- DB Write
- * 
+ *
  * @param {Omit<AllianceEphemeral, 'recordId' | 'recordedAt'>} values - The ephemeral state to append.
  * @param {Tx} [tx=sql] - Optional database or transaction client.
  * @returns {Promise<Result<void, Error>>} Success or database error.

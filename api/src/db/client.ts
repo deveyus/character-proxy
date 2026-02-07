@@ -16,7 +16,7 @@ const MAX_POOL_SIZE = Math.max(10, workerCount + 10);
 
 /**
  * Primary PostgreSQL client instance using postgres.js.
- * 
+ *
  * Performance: Medium -- DB Connection
  * Uses a connection pool scaled based on the configured WORKER_COUNT.
  */
@@ -41,15 +41,15 @@ export const db = sql as any;
 
 /**
  * Bootstraps the database, ensuring schema exists and migrations are current.
- * 
- * Side-Effects: 
+ *
+ * Side-Effects:
  * - Creates the target database if missing (on local connections).
  * - Executes pending TypeScript migrations.
  * - Runs Zod Alignment Guards to verify schema integrity.
- * 
+ *
  * Performance: High -- DB Init
  * Should only be called once during application startup.
- * 
+ *
  * @returns {Promise<Result<void, Error>>} Success or a combined initialization error.
  */
 export async function initializeDatabase(): Promise<Result<void, Error>> {
@@ -58,7 +58,7 @@ export async function initializeDatabase(): Promise<Result<void, Error>> {
 
   logger.info('DB', 'Initializing database schema...');
 
-  // In a real multi-file system, we'd dynamic import these, 
+  // In a real multi-file system, we'd dynamic import these,
   // but for now we list them explicitly.
   const migrations = [v1];
 

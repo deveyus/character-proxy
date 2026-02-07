@@ -26,7 +26,7 @@ Deno.test('DB Utils - findEntityGaps', async (t) => {
       const gaps = result.value;
       // Sorted by ID DESC, so 106-109 should be first
       assertEquals(gaps.length, 2);
-      
+
       assertEquals(gaps[0].startId, 106);
       assertEquals(gaps[0].endId, 109);
       assertEquals(gaps[0].gapSize, 4);

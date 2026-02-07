@@ -9,10 +9,10 @@ const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
 /**
  * Validates a list of EVE IDs using the bulk name lookup endpoint.
- * 
+ *
  * Performance: High -- ESI (Bulk Probe)
  * ESI: /universe/names/
- * 
+ *
  * @param {number[]} ids - List of up to 1000 IDs to probe.
  * @returns {Promise<number[]>} The subset of IDs that correspond to valid discoverable entities.
  */
@@ -31,11 +31,11 @@ async function probeIds(ids: number[]): Promise<number[]> {
       return [];
     }
 
-    const data = await response.json() as Array<{ id: number, category: string }>;
+    const data = await response.json() as Array<{ id: number; category: string }>;
     // We only care about characters, corporations, and alliances for now
     return data
-      .filter(item => ['character', 'corporation', 'alliance'].includes(item.category))
-      .map(item => item.id);
+      .filter((item) => ['character', 'corporation', 'alliance'].includes(item.category))
+      .map((item) => item.id);
   } catch (err) {
     logger.error('ESI', 'Bulk probe exception', { error: err });
     return [];
@@ -44,13 +44,13 @@ async function probeIds(ids: number[]): Promise<number[]> {
 
 /**
  * Executes a single step of the proactive prober.
- * 
+ *
  * Logic:
  * 1. Checks `getQueueDepth()`. Yields if the discovery queue is active.
  * 2. Attempts to find internal gaps in the character static table.
  * 3. If no internal gaps, continues forward from the last known frontier ID.
  * 4. Queues any discovered valid IDs.
- * 
+ *
  * Performance: High -- ESI (Bulk Probe)
  * Side-Effects: Triggers `addToQueue` for discovered IDs.
  */
@@ -66,11 +66,14 @@ export async function runProberStep() {
     for (let i = 0; i < PROBE_BLOCK_SIZE && (gap.startId + i) <= gap.endId; i++) {
       targetIds.push(gap.startId + i);
     }
-    
-    logger.info('SYSTEM', `Probing internal gap: ${targetIds[0]} to ${targetIds[targetIds.length-1]}`);
+
+    logger.info(
+      'SYSTEM',
+      `Probing internal gap: ${targetIds[0]} to ${targetIds[targetIds.length - 1]}`,
+    );
     const validIds = await probeIds(targetIds);
     for (const id of validIds) {
-      // We don't know the type from /universe/names/ without extra checking, 
+      // We don't know the type from /universe/names/ without extra checking,
       // but addToQueue handles collisions and the worker will resolve the actual type.
       // For now, we assume it's the type of the table we found the gap in.
       await addToQueue(id, 'character');
@@ -80,8 +83,10 @@ export async function runProberStep() {
 
   // --- 2. Handle Frontier (Brute Force forward) ---
   const lastIdState = await getState<{ last_id: number }>('prober_last_frontier_id');
-  const currentId = lastIdState.isOk() && lastIdState.value ? lastIdState.value.last_id : 2112000000;
-  
+  const currentId = lastIdState.isOk() && lastIdState.value
+    ? lastIdState.value.last_id
+    : 2112000000;
+
   const hwm = await getHWM('character');
   if (currentId < hwm) {
     const targetIds = [];
@@ -89,7 +94,10 @@ export async function runProberStep() {
       targetIds.push(currentId + i);
     }
 
-    logger.info('SYSTEM', `Probing frontier: ${targetIds[0]} to ${targetIds[targetIds.length-1]}`);
+    logger.info(
+      'SYSTEM',
+      `Probing frontier: ${targetIds[0]} to ${targetIds[targetIds.length - 1]}`,
+    );
     const validIds = await probeIds(targetIds);
     for (const id of validIds) {
       await addToQueue(id, 'character');
@@ -112,6 +120,6 @@ export async function startProber() {
       logger.error('SYSTEM', 'Prober step failed', { error: err });
     }
     // Polite wait between steps
-    await new Promise(r => setTimeout(r, 10000)); 
+    await new Promise((r) => setTimeout(r, 10000));
   }
 }

@@ -31,7 +31,7 @@ const listeners = new Map<DiscoveryEvent, Set<DiscoveryCallback>>();
 /**
  * Registers a listener for discovery completion events.
  * Useful for test synchronization or internal monitoring.
- * 
+ *
  * @param {DiscoveryEvent} event - The event to listen for.
  * @param {DiscoveryCallback} cb - The callback function to execute.
  */
@@ -42,7 +42,7 @@ export function onDiscoveryEvent(event: DiscoveryEvent, cb: DiscoveryCallback) {
 
 /**
  * Unregisters a previously registered discovery event listener.
- * 
+ *
  * @param {DiscoveryEvent} event - Target event.
  * @param {DiscoveryCallback} cb - Target callback.
  */
@@ -54,21 +54,21 @@ export function offDiscoveryEvent(event: DiscoveryEvent, cb: DiscoveryCallback) 
  * Internal helper to broadcast discovery completion.
  */
 function emit(event: DiscoveryEvent, id: number) {
-  listeners.get(event)?.forEach(cb => cb(id));
+  listeners.get(event)?.forEach((cb) => cb(id));
 }
 
 /**
  * Analyzes a Character and queues all newly discovered related entities.
- * 
+ *
  * Side-Effects:
  * - Triggers `addToQueue` for the current corporation and alliance.
  * - Parses bio links and queues any discovered entities.
  * - Fetches character corporation history and queues all historical corps.
  * - Updates `last_discovery_at` in the character static record.
  * - Emits a `character_extracted` event.
- * 
+ *
  * Performance: Medium -- ESI (on history crawl)
- * 
+ *
  * @param {number} id - Target character EVE ID.
  * @param {unknown} rawData - Fresh character data from ESI.
  */
@@ -83,11 +83,16 @@ export async function extractFromCharacter(id: number, rawData: unknown): Promis
       return;
     }
     const data = dataParse.data;
-    logger.info('SYSTEM', `extractFromCharacter parsed data for ${id}`, { corpId: data.corporation_id });
+    logger.info('SYSTEM', `extractFromCharacter parsed data for ${id}`, {
+      corpId: data.corporation_id,
+    });
 
     if (data.corporation_id) {
       const res = await addToQueue(data.corporation_id, 'corporation');
-      logger.info('SYSTEM', `addToQueue result for corp ${data.corporation_id}: ${res.isOk() ? 'OK' : 'ERR'}`);
+      logger.info(
+        'SYSTEM',
+        `addToQueue result for corp ${data.corporation_id}: ${res.isOk() ? 'OK' : 'ERR'}`,
+      );
     }
     if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
@@ -123,16 +128,16 @@ export async function extractFromCharacter(id: number, rawData: unknown): Promis
 
 /**
  * Analyzes a Corporation and queues related entities.
- * 
+ *
  * Side-Effects:
  * - Queues the CEO, Creator, and current Alliance.
  * - Fetches alliance history and queues all historical alliances.
  * - Parses description bio links.
  * - Updates `last_discovery_at` in the corporation static record.
  * - Emits a `corporation_extracted` event.
- * 
+ *
  * Performance: Medium -- ESI (on history crawl)
- * 
+ *
  * @param {number} id - Target corporation EVE ID.
  * @param {unknown} rawData - Fresh corporation data from ESI.
  */
@@ -182,16 +187,16 @@ export async function extractFromCorporation(
 
 /**
  * Analyzes an Alliance and queues related entities.
- * 
+ *
  * Side-Effects:
  * - Queues the Creator and Executor Corporation.
  * - Fetches all current member corporations and queues them.
  * - Parses description bio links.
  * - Updates `last_discovery_at` in the alliance static record.
  * - Emits an `alliance_extracted` event.
- * 
+ *
  * Performance: Medium -- ESI (on member crawl)
- * 
+ *
  * @param {number} id - Target alliance EVE ID.
  * @param {unknown} rawData - Fresh alliance data from ESI.
  */

@@ -2,7 +2,8 @@ import { Migration } from './types.ts';
 
 export const migration: Migration = {
   version: 1,
-  description: 'Grand Baseline: Initial schema for characters, corporations, alliances, queue, and API keys.',
+  description:
+    'Grand Baseline: Initial schema for characters, corporations, alliances, queue, and API keys.',
   // deno-lint-ignore no-explicit-any
   up: async (tx: any) => {
     // --- Characters ---

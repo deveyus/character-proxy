@@ -15,7 +15,9 @@ Deno.test('tRPC Entity Procedures', async (t) => {
   const { rawKey } = keyResult.value;
 
   const ctx = createTRPCContext(
-    { req: new Request('http://localhost', { headers: { 'x-api-key': rawKey } }) } as unknown as FetchCreateContextFnOptions,
+    {
+      req: new Request('http://localhost', { headers: { 'x-api-key': rawKey } }),
+    } as unknown as FetchCreateContextFnOptions,
   );
   const caller = appRouter.createCaller(ctx);
   const originalFetch = globalThis.fetch;

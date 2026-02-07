@@ -13,17 +13,17 @@ export interface IdGap {
 
 /**
  * Identifies missing ID ranges in a static entity table.
- * 
+ *
  * Uses the PostgreSQL `LEAD()` window function to calculate the gap between consecutive IDs.
- * Results are prioritized by newest (highest IDs) and smallest gap size to maximize 
+ * Results are prioritized by newest (highest IDs) and smallest gap size to maximize
  * discovery probability.
- * 
+ *
  * Performance: Medium -- DB Scan
  * Executes a full index scan on the primary key of the target table.
- * 
+ *
  * @param {'character' | 'corporation'} type - The entity space to analyze.
  * @returns {Promise<Result<IdGap[], Error>>} A list of up to 100 prioritized gaps.
- * 
+ *
  * @example
  * const result = await findEntityGaps('character');
  * if (result.isOk()) {
@@ -57,7 +57,7 @@ export async function findEntityGaps(
       LIMIT 100
     `;
 
-    return rows.map(r => ({
+    return rows.map((r) => ({
       startId: Number(r.startId),
       endId: Number(r.endId),
       gapSize: Number(r.gapSize),

@@ -4,15 +4,15 @@ import { addToQueue } from './queue.ts';
 
 /**
  * Periodically identifies entities that have exceeded the freshness threshold and re-queues them.
- * 
+ *
  * Logic:
  * 1. Scans `character_static`, `corporation_static`, and `alliance_static`.
  * 2. Filters for entities where the intelligent urgency formula returns > 1.0.
  * 3. Adds selected IDs back to the `discovery_queue`.
- * 
+ *
  * Performance: Medium -- DB Scan
  * Executes full scans over the `static` entity tables. Limit 100 per cycle.
- * 
+ *
  * Side-Effects: Triggers `addToQueue` for discovered stale IDs.
  */
 export async function requeueStaleEntities() {
@@ -64,7 +64,7 @@ export async function requeueStaleEntities() {
 
 /**
  * Starts the long-running maintenance worker loop.
- * 
+ *
  * Runs every hour by default.
  */
 export async function startMaintenanceWorker() {

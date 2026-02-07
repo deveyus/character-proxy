@@ -22,21 +22,21 @@ interface ESIAlliance {
 
 /**
  * Retrieves an alliance by its EVE ID, utilizing a local cache with ESI fallback.
- * 
+ *
  * Side-Effects:
  * - Increments `access_count` in the database.
  * - Writes fresh ESI data to `alliance_static` and `alliance_ephemeral`.
  * - Triggers asynchronous background discovery analysis (`extractFromAlliance`).
  * - Marks known alliances as terminated if ESI returns a 404 or a `date_terminated`.
- * 
+ *
  * Performance: High -- ESI (on cache miss) | Medium -- DB Join (on cache hit)
- * 
+ *
  * @param {number} id - The EVE Online alliance ID.
  * @param {number} [maxAge] - Optional freshness requirement.
  * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
- * @returns {Promise<Result<ServiceResponse<db.AllianceEntity>, Error>>} 
+ * @returns {Promise<Result<ServiceResponse<db.AllianceEntity>, Error>>}
  * A result containing the alliance data and cache metadata.
- * 
+ *
  * @example
  * const result = await allianceService.getById(99000001);
  * if (result.isOk()) {
@@ -60,7 +60,9 @@ export async function getById(
         UPDATE alliance_static
         SET access_count = access_count + 1
         WHERE alliance_id = ${id}
-      `.catch(err => logger.warn('DB', `Failed to increment access count for alliance ${id}: ${err.message}`));
+      `.catch((err) =>
+        logger.warn('DB', `Failed to increment access count for alliance ${id}: ${err.message}`)
+      );
     }
 
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
@@ -82,7 +84,9 @@ export async function getById(
             creatorId: esiRes.data.creator_id,
             creatorCorporationId: esiRes.data.creator_corporation_id,
             factionId: esiRes.data.faction_id || null,
-            terminatedAt: esiRes.data.date_terminated ? new Date(esiRes.data.date_terminated) : null,
+            terminatedAt: esiRes.data.date_terminated
+              ? new Date(esiRes.data.date_terminated)
+              : null,
             etag: esiRes.etag,
             expiresAt: esiRes.expiresAt,
             lastModifiedAt: new Date(),
@@ -96,7 +100,7 @@ export async function getById(
             executorCorpId: esiRes.data.executor_corporation_id || null,
             memberCount: esiRes.data.member_count,
           }, tx);
-        }).then(() => Ok(void 0)).catch(err => Err(err));
+        }).then(() => Ok(void 0)).catch((err) => Err(err));
 
         if (transactionResult.isErr()) return transactionResult;
 
@@ -211,14 +215,14 @@ export async function getById(
 
 /**
  * Resolves an alliance by its exact name.
- * 
+ *
  * Side-Effects: Triggers `getById` if the name is found locally.
  * Performance: Medium -- DB Lookup | High -- ESI (on internal getById miss)
- * 
+ *
  * @param {string} name - The exact alliance name.
  * @param {number} [maxAge] - Optional freshness requirement.
  * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
- * @returns {Promise<Result<ServiceResponse<db.AllianceEntity>, Error>>} 
+ * @returns {Promise<Result<ServiceResponse<db.AllianceEntity>, Error>>}
  * A result containing the alliance data.
  */
 export async function getByName(

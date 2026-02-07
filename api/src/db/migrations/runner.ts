@@ -69,8 +69,10 @@ async function verifyPhysicalStructure(version: number): Promise<Result<void, Er
   `;
 
   if (rows.length < coreTables.length) {
-    const missing = coreTables.filter(t => !rows.some(r => r.table_name === t));
-    return Err(new Error(`Database version is ${version}, but missing core tables: ${missing.join(', ')}`));
+    const missing = coreTables.filter((t) => !rows.some((r) => r.table_name === t));
+    return Err(
+      new Error(`Database version is ${version}, but missing core tables: ${missing.join(', ')}`),
+    );
   }
 
   return Ok(void 0);
@@ -83,7 +85,7 @@ export async function runMigrations(migrations: Migration[]): Promise<Result<voi
   try {
     await ensureMigrationTable();
     const currentVersion = await getCurrentVersion();
-    
+
     // Physical Guard: Verify structure matches claimed version
     const verification = await verifyPhysicalStructure(currentVersion);
     if (verification.isErr()) {
@@ -101,16 +103,19 @@ export async function runMigrations(migrations: Migration[]): Promise<Result<voi
       return Ok(void 0);
     }
 
-    logger.info('DB', `Found ${pending.length} pending migrations. Current version: ${currentVersion}`);
+    logger.info(
+      'DB',
+      `Found ${pending.length} pending migrations. Current version: ${currentVersion}`,
+    );
 
     for (const migration of pending) {
       logger.info('DB', `Applying migration ${migration.version}: ${migration.description}`);
-      
+
       await sql.begin(async (tx) => {
         await migration.up(tx);
         await setVersion(migration.version, tx);
       });
-      
+
       logger.info('DB', `Migration ${migration.version} applied successfully.`);
     }
 

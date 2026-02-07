@@ -48,7 +48,8 @@ Deno.test('Character Service - getById', async (t) => {
     assertEquals(staticRec.length, 1);
     assertEquals(staticRec[0].etag, '"service-abc"');
 
-    const ephemeralRec = await sql`SELECT * FROM character_ephemeral WHERE character_id = ${charId}`;
+    const ephemeralRec =
+      await sql`SELECT * FROM character_ephemeral WHERE character_id = ${charId}`;
     assertEquals(ephemeralRec.length, 1);
   });
 

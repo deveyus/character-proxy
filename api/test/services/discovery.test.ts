@@ -3,7 +3,7 @@ import { initializeDatabase, sql } from '../../src/db/client.ts';
 import * as characterService from '../../src/services/character.ts';
 import { processQueueItem } from '../../src/services/discovery/worker.ts';
 import { setupLogger } from '../../src/utils/logger.ts';
-import { onDiscoveryEvent, offDiscoveryEvent } from '../../src/services/discovery/extraction.ts';
+import { offDiscoveryEvent, onDiscoveryEvent } from '../../src/services/discovery/extraction.ts';
 
 Deno.test('Discovery Integration', async (t) => {
   await setupLogger();

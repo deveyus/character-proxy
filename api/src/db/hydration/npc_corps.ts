@@ -10,7 +10,9 @@ const HYDRATION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
  * Hydrates the database with NPC corporations from ESI.
  * Now uses the service layer to ensure consistent ledger and cache management.
  */
-export async function hydrateNpcCorporations(_sql: typeof defaultSql): Promise<Result<void, Error>> {
+export async function hydrateNpcCorporations(
+  _sql: typeof defaultSql,
+): Promise<Result<void, Error>> {
   try {
     logger.info('SYSTEM', 'Hydrating NPC corporations...');
 

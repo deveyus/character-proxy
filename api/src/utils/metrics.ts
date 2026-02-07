@@ -1,6 +1,6 @@
 /**
  * Simple in-memory metrics collector for application performance monitoring.
- * 
+ *
  * Performance: Low -- In-Memory
  * Metrics are updated in-memory and are not persisted across application restarts.
  */
@@ -17,7 +17,7 @@ class MetricsCollector {
 
   /**
    * Increments a named counter.
-   * 
+   *
    * @param {keyof Omit<typeof this.metrics, 'start_time'>} name - The metric key to increment.
    */
   inc(name: keyof Omit<typeof this.metrics, 'start_time'>) {
@@ -26,7 +26,7 @@ class MetricsCollector {
 
   /**
    * Generates a snapshot of current system metrics and uptime.
-   * 
+   *
    * @returns {Object} A key-value map of metric names to current values.
    */
   getSnapshot() {

@@ -27,8 +27,10 @@ Deno.test('Entity Schema', async (t) => {
     `;
 
     // Retrieve
-    const retrievedStatic = await sql`SELECT * FROM character_static WHERE character_id = ${charId}`;
-    const retrievedEphemeral = await sql`SELECT * FROM character_ephemeral WHERE character_id = ${charId}`;
+    const retrievedStatic =
+      await sql`SELECT * FROM character_static WHERE character_id = ${charId}`;
+    const retrievedEphemeral =
+      await sql`SELECT * FROM character_ephemeral WHERE character_id = ${charId}`;
 
     assertEquals(retrievedStatic[0].name, 'Test Character');
     assertEquals(retrievedStatic[0].gender, 'female');
@@ -55,8 +57,10 @@ Deno.test('Entity Schema', async (t) => {
       VALUES (${uuidv7()}, ${corpId}, 90000002, 100)
     `;
 
-    const retrievedStatic = await sql`SELECT * FROM corporation_static WHERE corporation_id = ${corpId}`;
-    const retrievedEphemeral = await sql`SELECT * FROM corporation_ephemeral WHERE corporation_id = ${corpId}`;
+    const retrievedStatic =
+      await sql`SELECT * FROM corporation_static WHERE corporation_id = ${corpId}`;
+    const retrievedEphemeral =
+      await sql`SELECT * FROM corporation_ephemeral WHERE corporation_id = ${corpId}`;
 
     assertEquals(retrievedStatic[0].name, 'Test Corporation');
     assertEquals(Number(retrievedStatic[0].creator_id), 90000002);
@@ -73,7 +77,9 @@ Deno.test('Entity Schema', async (t) => {
     // Insert Static
     await sql`
       INSERT INTO alliance_static (alliance_id, name, ticker, date_founded, creator_id, creator_corporation_id)
-      VALUES (${allianceId}, 'Test Alliance', 'TALLI', ${new Date('2005-01-01T00:00:00Z')}, 90000003, 10000003)
+      VALUES (${allianceId}, 'Test Alliance', 'TALLI', ${new Date(
+      '2005-01-01T00:00:00Z',
+    )}, 90000003, 10000003)
     `;
 
     // Insert Ephemeral
@@ -82,7 +88,8 @@ Deno.test('Entity Schema', async (t) => {
       VALUES (${uuidv7()}, ${allianceId}, 1000, 10000003)
     `;
 
-    const retrievedStatic = await sql`SELECT * FROM alliance_static WHERE alliance_id = ${allianceId}`;
+    const retrievedStatic =
+      await sql`SELECT * FROM alliance_static WHERE alliance_id = ${allianceId}`;
     assertEquals(retrievedStatic[0].name, 'Test Alliance');
     assertEquals(Number(retrievedStatic[0].creator_id), 90000003);
   });
