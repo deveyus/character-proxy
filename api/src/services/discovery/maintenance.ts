@@ -14,14 +14,13 @@ export async function requeueStaleEntities() {
 
   const now = new Date();
 
-  // We look for items where (Now - lastDiscoveryAt) * (accessCount + 1) > 86400
-  // AND they are not currently in the queue (lockedUntil is null or in the past)
-  // Actually, simplest check: entities where lastDiscoveryAt is null OR very old.
+  // We look for items where Urgency > 0.125 (roughly 6 hours at baseline)
+  // Formula: (Age / 86400)^2 * log10(AccessCount + 10)
 
   const staleCharacters = await sql`
     SELECT character_id as id
     FROM character_static
-    WHERE (last_discovery_at IS NULL OR (EXTRACT(EPOCH FROM (${now} - last_discovery_at)) * (access_count + 1)) > 86400)
+    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 0.125)
     LIMIT 100
   `;
 
@@ -32,7 +31,7 @@ export async function requeueStaleEntities() {
   const staleCorps = await sql`
     SELECT corporation_id as id
     FROM corporation_static
-    WHERE (last_discovery_at IS NULL OR (EXTRACT(EPOCH FROM (${now} - last_discovery_at)) * (access_count + 1)) > 86400)
+    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 0.125)
     LIMIT 100
   `;
 
@@ -43,7 +42,7 @@ export async function requeueStaleEntities() {
   const staleAlliances = await sql`
     SELECT alliance_id as id
     FROM alliance_static
-    WHERE (last_discovery_at IS NULL OR (EXTRACT(EPOCH FROM (${now} - last_discovery_at)) * (access_count + 1)) > 86400)
+    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 0.125)
     LIMIT 100
   `;
 
