@@ -2,6 +2,9 @@ import { sql } from './client.ts';
 import { wrapAsync } from '../utils/result.ts';
 import { Result } from 'ts-results-es';
 
+/**
+ * Represents a contiguous range of missing EVE IDs in the local database.
+ */
 export interface IdGap {
   startId: number;
   endId: number;
@@ -9,9 +12,24 @@ export interface IdGap {
 }
 
 /**
- * Finds gaps in the ID sequence of a given static table.
- * Uses LEAD() window function to find the next ID and identify ranges where the difference > 1.
- * Returns gaps sorted by newest (highest IDs) and smallest gap size.
+ * Identifies missing ID ranges in a static entity table.
+ * 
+ * Uses the PostgreSQL `LEAD()` window function to calculate the gap between consecutive IDs.
+ * Results are prioritized by newest (highest IDs) and smallest gap size to maximize 
+ * discovery probability.
+ * 
+ * Performance: Medium -- DB Scan
+ * Executes a full index scan on the primary key of the target table.
+ * 
+ * @param {'character' | 'corporation'} type - The entity space to analyze.
+ * @returns {Promise<Result<IdGap[], Error>>} A list of up to 100 prioritized gaps.
+ * 
+ * @example
+ * const result = await findEntityGaps('character');
+ * if (result.isOk()) {
+ *   const mostUrgentGap = result.value[0];
+ *   console.log(`Missing range: ${mostUrgentGap.startId} to ${mostUrgentGap.endId}`);
+ * }
  */
 export async function findEntityGaps(
   type: 'character' | 'corporation',

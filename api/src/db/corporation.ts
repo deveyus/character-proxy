@@ -40,7 +40,14 @@ export type CorporationEphemeral = z.infer<typeof CorporationEphemeralSchema>;
 export type CorporationEntity = z.infer<typeof CorporationEntitySchema>;
 
 /**
- * Resolves a corporation by its EVE ID.
+ * Resolves a corporation by its unique EVE Online ID.
+ * 
+ * Performance: Medium -- DB Join
+ * Performs an INNER JOIN between `corporation_static` and the latest record 
+ * in `corporation_ephemeral`.
+ * 
+ * @param {number} id - The EVE ID of the corporation.
+ * @returns {Promise<Result<CorporationEntity | null, Error>>} The corporation data or null if not indexed.
  */
 export async function resolveById(id: number): Promise<Result<CorporationEntity | null, Error>> {
   return await wrapAsync(async () => {
@@ -77,6 +84,12 @@ export async function resolveById(id: number): Promise<Result<CorporationEntity 
 
 /**
  * Resolves a corporation by its name.
+ * 
+ * Performance: Medium -- DB Join
+ * Uses a B-Tree index on the name column for efficient retrieval.
+ * 
+ * @param {string} name - The exact name of the corporation.
+ * @returns {Promise<Result<CorporationEntity | null, Error>>} The corporation data or null if not indexed.
  */
 export async function resolveByName(name: string): Promise<Result<CorporationEntity | null, Error>> {
   return await wrapAsync(async () => {
@@ -112,7 +125,14 @@ export async function resolveByName(name: string): Promise<Result<CorporationEnt
 }
 
 /**
- * Upserts the static data and cache headers for a corporation.
+ * Atomic UPSERT of static corporation identity data.
+ * 
+ * Side-Effects: Writes to `corporation_static` table.
+ * Performance: Low -- DB Write
+ * 
+ * @param {CorporationStatic} values - The static identity fields to persist.
+ * @param {Tx} [tx=sql] - Optional database or transaction client.
+ * @returns {Promise<Result<void, Error>>} Success or database error.
  */
 export async function upsertStatic(
   values: CorporationStatic,
@@ -144,7 +164,14 @@ export async function upsertStatic(
 }
 
 /**
- * Appends a new ephemeral record to the corporation historical ledger.
+ * Appends a new point-in-time snapshot to the corporation historical ledger.
+ * 
+ * Side-Effects: Writes a new UUIDv7-indexed row to `corporation_ephemeral`.
+ * Performance: Low -- DB Write
+ * 
+ * @param {Omit<CorporationEphemeral, 'recordId' | 'recordedAt'>} values - The ephemeral state to append.
+ * @param {Tx} [tx=sql] - Optional database or transaction client.
+ * @returns {Promise<Result<void, Error>>} Success or database error.
  */
 export async function appendEphemeral(
   values: Omit<CorporationEphemeral, 'recordId' | 'recordedAt'>,
