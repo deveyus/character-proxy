@@ -16,7 +16,21 @@ export interface SystemStatus {
 }
 
 /**
- * Collects and returns the current system status.
+ * Collects and returns a snapshot of the current system status and health.
+ * 
+ * Aggregates information from the ESI rate limiter, internal metrics, 
+ * background worker heartbeats, and discovery queue depth.
+ * 
+ * Performance: Medium -- DB Scan
+ * Queries the `system_state` and `discovery_queue` tables.
+ * 
+ * @returns {Promise<Result<SystemStatus, Error>>} A result containing the system status report.
+ * 
+ * @example
+ * const result = await getSystemStatus();
+ * if (result.isOk()) {
+ *   console.log(`Queue Depth: ${result.value.queueDepth}`);
+ * }
  */
 export async function getSystemStatus(): Promise<Result<SystemStatus, Error>> {
   return await wrapAsync(async () => {
