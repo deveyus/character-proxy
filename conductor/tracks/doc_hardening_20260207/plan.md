@@ -4,16 +4,16 @@
 - [x] Task: Document Database Layer bd046ae
     - [x] Audit `api/src/db/` (character, corporation, alliance, common, client, system_state, utils).
     - [x] Update JSDoc with precise types, side-effect notes, and `@param`/`@returns`.
-- [~] Task: Document Core Utilities
-    - [ ] Audit `api/src/utils/` (bio_parser, logger, metrics, result).
-    - [ ] Add `@example` blocks for fallible functions returning `Result`.
-- [ ] Task: Conductor - User Manual Verification 'Foundation & Utilities' (Protocol in workflow.md)
+- [x] Task: Document Core Utilities 058f7a8
+    - [x] Audit `api/src/utils/` (bio_parser, logger, metrics, result).
+    - [x] Add `@example` blocks for fallible functions returning `Result`.
+- [x] Task: Conductor - User Manual Verification 'Foundation & Utilities' (Protocol in workflow.md) aeb09e4
 
 ## Phase 2: Client & Infrastructure
-- [ ] Task: Document ESI Client
-    - [ ] Audit `api/src/clients/` (esi, esi_limiter, esi_schemas).
-    - [ ] Add `Performance: High -- ESI` notes and ESI path templates (e.g., `ESI: /.../`).
-- [ ] Task: Document Auth & System Infrastructure
+- [x] Task: Document ESI Client a0e670d
+    - [x] Audit `api/src/clients/` (esi, esi_limiter, esi_schemas).
+    - [x] Add `Performance: High -- ESI` notes and ESI path templates (e.g., `ESI: /.../`).
+- [~] Task: Document Auth & System Infrastructure
     - [ ] Audit `api/src/services/auth.ts` and `api/src/services/system.ts`.
     - [ ] Document side-effects (DB writes, key hashing) and performance implications.
 - [ ] Task: Conductor - User Manual Verification 'Client & Infrastructure' (Protocol in workflow.md)
