@@ -1,5 +1,4 @@
-import { db } from '../../db/client.ts';
-import { sql } from 'drizzle-orm';
+import { sql } from '../../db/client.ts';
 import { logger } from '../../utils/logger.ts';
 import { addToQueue } from './queue.ts';
 
@@ -19,37 +18,37 @@ export async function requeueStaleEntities() {
   // AND they are not currently in the queue (lockedUntil is null or in the past)
   // Actually, simplest check: entities where lastDiscoveryAt is null OR very old.
 
-  const staleCharacters = await db.execute(sql`
+  const staleCharacters = await sql`
     SELECT character_id as id
     FROM character_static
     WHERE (last_discovery_at IS NULL OR (EXTRACT(EPOCH FROM (${now} - last_discovery_at)) * (access_count + 1)) > 86400)
     LIMIT 100
-  `);
+  `;
 
   for (const row of staleCharacters) {
-    await addToQueue(row.id as number, 'character');
+    await addToQueue(Number(row.id), 'character');
   }
 
-  const staleCorps = await db.execute(sql`
+  const staleCorps = await sql`
     SELECT corporation_id as id
     FROM corporation_static
     WHERE (last_discovery_at IS NULL OR (EXTRACT(EPOCH FROM (${now} - last_discovery_at)) * (access_count + 1)) > 86400)
     LIMIT 100
-  `);
+  `;
 
   for (const row of staleCorps) {
-    await addToQueue(row.id as number, 'corporation');
+    await addToQueue(Number(row.id), 'corporation');
   }
 
-  const staleAlliances = await db.execute(sql`
+  const staleAlliances = await sql`
     SELECT alliance_id as id
     FROM alliance_static
     WHERE (last_discovery_at IS NULL OR (EXTRACT(EPOCH FROM (${now} - last_discovery_at)) * (access_count + 1)) > 86400)
     LIMIT 100
-  `);
+  `;
 
   for (const row of staleAlliances) {
-    await addToQueue(row.id as number, 'alliance');
+    await addToQueue(Number(row.id), 'alliance');
   }
 
   logger.info('SYSTEM', 'Maintenance: Re-queue check complete.');

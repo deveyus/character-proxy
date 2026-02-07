@@ -3,11 +3,9 @@ import * as characterService from '../character.ts';
 import * as corporationService from '../corporation.ts';
 import * as allianceService from '../alliance.ts';
 import { claimTask, markAsCompleted, markAsFailed } from './queue.ts';
-import { Err, Ok, Result } from 'ts-results-es';
+import { Ok, Result } from 'ts-results-es';
 import { getApiHealth } from '../../clients/esi_limiter.ts';
-import { db } from '../../db/client.ts';
-import { discoveryQueue } from '../../db/schema.ts';
-import { and, eq } from 'drizzle-orm';
+import { sql } from '../../db/client.ts';
 
 import { metrics } from '../../utils/metrics.ts';
 import { setState } from '../../db/system_state.ts';
@@ -45,16 +43,11 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
     }
 
     if (!result) {
-      return Err(new Error(`Unknown entity type: ${entityType}`));
+      return Ok(false); // Should not happen with type safety
     }
 
     if (result.isErr()) {
       const error = result.error;
-      // Handle ESI specific error types if available (from fetchEntity results)
-      // Note: result comes from Service, which wraps ESIResponse.
-      // We might need to inspect the error message or enrich the service return.
-      // But for now, let's use the error message pattern or check if we can get the type.
-
       const isNotFound = error.message.includes('404') || error.message.includes('not found');
       const isTransient = error.message.includes('Rate limit') || error.message.includes('500') ||
         error.message.includes('503');
@@ -64,7 +57,7 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
           'SYSTEM',
           `Dead end discovery (404): ${entityType} ${item.entityId}. Deleting.`,
         );
-        await markAsCompleted(item.entityId, entityType); // Deleting is done via markAsCompleted
+        await markAsCompleted(item.entityId, entityType);
         return Ok(true);
       }
 
@@ -73,14 +66,11 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
           'SYSTEM',
           `Transient error for ${entityType} ${item.entityId}. Releasing lock.`,
         );
-        await db.update(discoveryQueue)
-          .set({ lockedUntil: null })
-          .where(
-            and(
-              eq(discoveryQueue.entityId, item.entityId),
-              eq(discoveryQueue.entityType, entityType),
-            ),
-          );
+        await sql`
+          UPDATE discovery_queue
+          SET locked_until = NULL
+          WHERE entity_id = ${item.entityId} AND entity_type = ${entityType}
+        `;
         return Ok(false);
       }
 

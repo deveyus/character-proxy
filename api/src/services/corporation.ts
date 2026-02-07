@@ -5,9 +5,7 @@ import { FetchPriority } from '../clients/esi_limiter.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 import { extractFromCorporation } from './discovery/extraction.ts';
 import { logger } from '../utils/logger.ts';
-import { db as pg } from '../db/client.ts';
-import { corporationStatic } from '../db/schema.ts';
-import { eq, sql } from 'drizzle-orm';
+import { sql } from '../db/client.ts';
 import { metrics } from '../utils/metrics.ts';
 
 interface ESICorporation {
@@ -36,9 +34,11 @@ export async function getById(
 
     // 2. Increment access count if user priority
     if (priority === 'user' && localEntity) {
-      await pg.update(corporationStatic)
-        .set({ accessCount: sql`${corporationStatic.accessCount} + 1` })
-        .where(eq(corporationStatic.corporationId, id));
+      sql`
+        UPDATE corporation_static
+        SET access_count = access_count + 1
+        WHERE corporation_id = ${id}
+      `.catch(err => logger.warn('DB', `Failed to increment access count for corporation ${id}: ${err.message}`));
     }
 
     if (shouldFetch(localEntity?.expiresAt || null, localEntity?.lastModifiedAt || null, maxAge)) {
@@ -50,17 +50,19 @@ export async function getById(
       );
 
       if (esiRes.status === 'fresh') {
-        await pg.transaction(async (tx) => {
+        const transactionResult = await sql.begin(async (tx: any) => {
           const updateStatic = await db.upsertStatic({
             corporationId: id,
             name: esiRes.data.name,
             ticker: esiRes.data.ticker,
             dateFounded: esiRes.data.date_founded ? new Date(esiRes.data.date_founded) : null,
-            creatorId: esiRes.data.creator_id,
-            factionId: esiRes.data.faction_id,
+            creatorId: esiRes.data.creator_id ?? null,
+            factionId: esiRes.data.faction_id ?? null,
             etag: esiRes.etag,
             expiresAt: esiRes.expiresAt,
             lastModifiedAt: new Date(),
+            accessCount: localEntity?.accessCount ?? 0,
+            lastDiscoveryAt: localEntity?.lastDiscoveryAt ?? null,
           }, tx);
           if (updateStatic.isErr()) throw updateStatic.error;
 
@@ -70,7 +72,9 @@ export async function getById(
             ceoId: esiRes.data.ceo_id,
             memberCount: esiRes.data.member_count,
           }, tx);
-        });
+        }).then(() => Ok(void 0)).catch(err => Err(err));
+
+        if (transactionResult.isErr()) return transactionResult;
 
         // Trigger discovery analysis (background)
         extractFromCorporation(id, esiRes.data).catch((err) => {

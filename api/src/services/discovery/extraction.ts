@@ -5,9 +5,7 @@ import {
   getCorpAllianceHistory,
 } from '../../clients/esi.ts';
 import { parseBioLinks } from '../../utils/bio_parser.ts';
-import { db as pg } from '../../db/client.ts';
-import { allianceStatic, characterStatic, corporationStatic } from '../../db/schema.ts';
-import { eq } from 'drizzle-orm';
+import { sql } from '../../db/client.ts';
 import {
   ESIAllianceHistorySchema,
   ESIAllianceMembersSchema,
@@ -22,6 +20,7 @@ import { logger } from '../../utils/logger.ts';
  * Analyzes a Character and queues related entities.
  */
 export async function extractFromCharacter(id: number, rawData: unknown): Promise<void> {
+  logger.info('SYSTEM', `extractFromCharacter called for ${id}`);
   const dataParse = ESICharacterSchema.safeParse(rawData);
   if (!dataParse.success) {
     logger.error('SYSTEM', `Invalid character data from ESI for ${id}`, {
@@ -30,8 +29,12 @@ export async function extractFromCharacter(id: number, rawData: unknown): Promis
     return;
   }
   const data = dataParse.data;
+  logger.info('SYSTEM', `extractFromCharacter parsed data for ${id}`, { corpId: data.corporation_id });
 
-  if (data.corporation_id) await addToQueue(data.corporation_id, 'corporation');
+  if (data.corporation_id) {
+    const res = await addToQueue(data.corporation_id, 'corporation');
+    logger.info('SYSTEM', `addToQueue result for corp ${data.corporation_id}: ${res.isOk() ? 'OK' : 'ERR'}`);
+  }
   if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
   const historyRes = await getCharacterCorpHistory(id);
@@ -49,9 +52,11 @@ export async function extractFromCharacter(id: number, rawData: unknown): Promis
   }
 
   // Update last discovery timestamp
-  await pg.update(characterStatic)
-    .set({ lastDiscoveryAt: new Date() })
-    .where(eq(characterStatic.characterId, id));
+  await sql`
+    UPDATE character_static
+    SET last_discovery_at = NOW()
+    WHERE character_id = ${id}
+  `;
 }
 
 /**
@@ -90,9 +95,11 @@ export async function extractFromCorporation(
   }
 
   // Update last discovery timestamp
-  await pg.update(corporationStatic)
-    .set({ lastDiscoveryAt: new Date() })
-    .where(eq(corporationStatic.corporationId, id));
+  await sql`
+    UPDATE corporation_static
+    SET last_discovery_at = NOW()
+    WHERE corporation_id = ${id}
+  `;
 }
 
 /**
@@ -127,7 +134,9 @@ export async function extractFromAlliance(id: number, rawData: unknown): Promise
   }
 
   // Update last discovery timestamp
-  await pg.update(allianceStatic)
-    .set({ lastDiscoveryAt: new Date() })
-    .where(eq(allianceStatic.allianceId, id));
+  await sql`
+    UPDATE alliance_static
+    SET last_discovery_at = NOW()
+    WHERE alliance_id = ${id}
+  `;
 }

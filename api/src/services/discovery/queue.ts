@@ -1,6 +1,4 @@
-import { db } from '../../db/client.ts';
-import { discoveryQueue } from '../../db/schema.ts';
-import { and, eq, sql } from 'drizzle-orm';
+import { sql } from '../../db/client.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 
 export type EntityType = 'character' | 'corporation' | 'alliance';
@@ -15,13 +13,16 @@ export async function addToQueue(
   entityType: EntityType,
 ): Promise<Result<void, Error>> {
   try {
-    await db.insert(discoveryQueue).values({
-      entityId,
-      entityType,
-    }).onConflictDoNothing();
+    await sql`
+      INSERT INTO discovery_queue (entity_id, entity_type)
+      VALUES (${entityId}, ${entityType})
+      ON CONFLICT (entity_id, entity_type) DO NOTHING
+    `;
     return Ok(void 0);
   } catch (error) {
-    return Err(error instanceof Error ? error : new Error(String(error)));
+    const err = error instanceof Error ? error : new Error(String(error));
+    console.error(`DEBUG: addToQueue failed for ${entityType} ${entityId}:`, err);
+    return Err(err);
   }
 }
 
@@ -33,9 +34,9 @@ export async function addToQueue(
 export async function claimTask() {
   const now = new Date();
 
-  return await db.transaction(async (tx) => {
+  return await sql.begin(async (tx: any) => {
     // We use a raw SQL fragment for the complex join/ordering to keep it efficient
-    const result = await tx.execute(sql`
+    const rows = await tx`
       SELECT q.* 
       FROM discovery_queue q
       LEFT JOIN character_static char ON q.entity_id = char.character_id AND q.entity_type = 'character'
@@ -48,26 +49,25 @@ export async function claimTask() {
       ) DESC
       LIMIT 1
       FOR UPDATE OF q SKIP LOCKED
-    `);
+    `;
 
-    if (result.length === 0) return null;
-    const item = result[0] as Record<string, unknown>;
+    if (rows.length === 0) return null;
+    const item = rows[0];
 
     const entityType = item.entity_type as EntityType;
-    const entityId = item.entity_id as number;
+    const entityId = Number(item.entity_id);
 
     const lockedUntil = new Date(Date.now() + LOCK_DURATION_MS);
-    await tx.update(discoveryQueue)
-      .set({ lockedUntil, updatedAt: now })
-      .where(and(
-        eq(discoveryQueue.entityId, entityId),
-        eq(discoveryQueue.entityType, entityType),
-      ));
+    await tx`
+      UPDATE discovery_queue
+      SET locked_until = ${lockedUntil}, updated_at = NOW()
+      WHERE entity_id = ${entityId} AND entity_type = ${entityType}
+    `;
 
     return {
       entityId,
       entityType,
-      attempts: item.attempts as number,
+      attempts: Number(item.attempts),
       lockedUntil,
     };
   });
@@ -77,8 +77,10 @@ export async function claimTask() {
  * Deletes a completed item from the queue.
  */
 export async function markAsCompleted(entityId: number, entityType: EntityType): Promise<void> {
-  await db.delete(discoveryQueue)
-    .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
+  await sql`
+    DELETE FROM discovery_queue
+    WHERE entity_id = ${entityId} AND entity_type = ${entityType}
+  `;
 }
 
 /**
@@ -89,11 +91,9 @@ export async function markAsFailed(
   entityType: EntityType,
   currentAttempts: number,
 ): Promise<void> {
-  await db.update(discoveryQueue)
-    .set({
-      lockedUntil: null,
-      attempts: currentAttempts + 1,
-      updatedAt: new Date(),
-    })
-    .where(and(eq(discoveryQueue.entityId, entityId), eq(discoveryQueue.entityType, entityType)));
+  await sql`
+    UPDATE discovery_queue
+    SET locked_until = NULL, attempts = ${currentAttempts + 1}, updated_at = NOW()
+    WHERE entity_id = ${entityId} AND entity_type = ${entityType}
+  `;
 }

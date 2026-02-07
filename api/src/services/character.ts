@@ -5,9 +5,7 @@ import { FetchPriority } from '../clients/esi_limiter.ts';
 import { logger } from '../utils/logger.ts';
 import { ServiceResponse, shouldFetch } from './utils.ts';
 import { extractFromCharacter } from './discovery/extraction.ts';
-import { db as pg } from '../db/client.ts';
-import { characterStatic } from '../db/schema.ts';
-import { eq, sql } from 'drizzle-orm';
+import { sql } from '../db/client.ts';
 
 import { metrics } from '../utils/metrics.ts';
 
@@ -39,9 +37,11 @@ export async function getById(
 
     // 2. Increment access count if user priority
     if (priority === 'user' && localEntity) {
-      await pg.update(characterStatic)
-        .set({ accessCount: sql`${characterStatic.accessCount} + 1` })
-        .where(eq(characterStatic.characterId, id));
+      sql`
+        UPDATE character_static
+        SET access_count = access_count + 1
+        WHERE character_id = ${id}
+      `.catch(err => logger.warn('DB', `Failed to increment access count for ${id}: ${err.message}`));
     }
 
     // 3. Decide if we fetch
@@ -55,7 +55,7 @@ export async function getById(
 
       if (esiRes.status === 'fresh') {
         // 4a. 200 OK - Atomic update
-        await pg.transaction(async (tx) => {
+        const transactionResult = await sql.begin(async (tx: any) => {
           const updateStatic = await db.upsertStatic({
             characterId: id,
             name: esiRes.data.name,
@@ -66,6 +66,8 @@ export async function getById(
             etag: esiRes.etag,
             expiresAt: esiRes.expiresAt,
             lastModifiedAt: new Date(),
+            accessCount: localEntity?.accessCount ?? 0,
+            lastDiscoveryAt: localEntity?.lastDiscoveryAt ?? null,
           }, tx);
           if (updateStatic.isErr()) throw updateStatic.error;
 
@@ -75,7 +77,9 @@ export async function getById(
             allianceId: esiRes.data.alliance_id || null,
             securityStatus: esiRes.data.security_status,
           }, tx);
-        });
+        }).then(() => Ok(void 0)).catch(err => Err(err));
+
+        if (transactionResult.isErr()) return transactionResult;
 
         // Trigger discovery analysis (background)
         extractFromCharacter(id, esiRes.data).catch((err) => {
