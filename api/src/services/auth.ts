@@ -1,13 +1,26 @@
 import { encodeBase64 } from 'std/encoding/base64.ts';
 import { encodeHex } from 'std/encoding/hex.ts';
-import { db } from '../db/client.ts';
-import { apiKeys } from '../db/schema.ts';
-import { and, eq } from 'drizzle-orm';
+import { sql } from '../db/client.ts';
+import { z } from 'zod';
+import { AuditTimestampsSchema } from '../db/common.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 import { logger } from '../utils/logger.ts';
 
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const keyCache = new Map<string, { isValid: boolean; expiry: number }>();
+
+// --- Schemas ---
+
+export const ApiKeySchema = z.object({
+  id: z.string().uuid(),
+  keyHash: z.string(),
+  keyPrefix: z.string(),
+  name: z.string(),
+  lastUsedAt: z.date().nullable(),
+  isActive: z.boolean(),
+}).merge(AuditTimestampsSchema);
+
+export type ApiKey = z.infer<typeof ApiKeySchema>;
 
 /**
  * Hashes a raw API key using SHA-512.
@@ -36,11 +49,11 @@ export async function generateNewKey(name: string): Promise<Result<{ rawKey: str
     const keyPrefix = rawKey.substring(0, 8);
 
     // 4. Store in DB
-    const [inserted] = await db.insert(apiKeys).values({
-      name,
-      keyHash,
-      keyPrefix,
-    }).returning({ id: apiKeys.id });
+    const [inserted] = await sql`
+      INSERT INTO api_keys (name, key_hash, key_prefix)
+      VALUES (${name}, ${keyHash}, ${keyPrefix})
+      RETURNING id
+    `;
 
     return Ok({ rawKey, id: inserted.id });
   } catch (error) {
@@ -63,10 +76,14 @@ export async function validateKey(rawKey: string): Promise<boolean> {
   try {
     // 2. Hash and lookup
     const keyHash = await hashKey(rawKey);
-    const [match] = await db.select().from(apiKeys)
-      .where(and(eq(apiKeys.keyHash, keyHash), eq(apiKeys.isActive, true)))
-      .limit(1);
+    const rows = await sql`
+      SELECT id
+      FROM api_keys
+      WHERE key_hash = ${keyHash} AND is_active = true
+      LIMIT 1
+    `;
 
+    const match = rows[0];
     const isValid = !!match;
 
     // 3. Update cache
@@ -77,10 +94,11 @@ export async function validateKey(rawKey: string): Promise<boolean> {
 
     // 4. Update last_used_at (async)
     if (match) {
-      db.update(apiKeys)
-        .set({ lastUsedAt: new Date() })
-        .where(eq(apiKeys.id, match.id))
-        .catch(err => logger.warn('AUTH', `Failed to update lastUsedAt: ${err.message}`));
+      sql`
+        UPDATE api_keys
+        SET last_used_at = NOW()
+        WHERE id = ${match.id}
+      `.catch(err => logger.warn('AUTH', `Failed to update lastUsedAt: ${err.message}`));
     }
 
     return isValid;
@@ -95,7 +113,11 @@ export async function validateKey(rawKey: string): Promise<boolean> {
  */
 export async function revokeKey(id: string): Promise<Result<void, Error>> {
   try {
-    await db.update(apiKeys).set({ isActive: false }).where(eq(apiKeys.id, id));
+    await sql`
+      UPDATE api_keys
+      SET is_active = false
+      WHERE id = ${id}
+    `;
     // Clear cache (brute force since we don't know which raw key it was)
     keyCache.clear(); 
     return Ok(void 0);

@@ -1,7 +1,5 @@
 import { generateNewKey, revokeKey } from './services/auth.ts';
-import { db } from './db/client.ts';
-import { apiKeys } from './db/schema.ts';
-import { desc } from 'drizzle-orm';
+import { sql } from './db/client.ts';
 
 async function main() {
   const [command, ...args] = Deno.args;
@@ -28,7 +26,11 @@ async function main() {
     }
 
     case 'list': {
-      const keys = await db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt));
+      const keys = await sql`
+        SELECT id, name, key_prefix as "keyPrefix", is_active as "isActive", last_used_at as "lastUsedAt", created_at as "createdAt"
+        FROM api_keys
+        ORDER BY created_at DESC
+      `;
       console.log('--- ACTIVE API KEYS ---');
       console.table(keys.map(k => ({
         id: k.id,
@@ -60,8 +62,8 @@ async function main() {
   }
 
   // Ensure DB connection closes
-  const { sql } = await import('./db/client.ts');
-  await sql.end();
+  const { sql: dbSql } = await import('./db/client.ts');
+  await dbSql.end();
   Deno.exit(0);
 }
 
