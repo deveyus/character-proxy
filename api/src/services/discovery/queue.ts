@@ -44,8 +44,8 @@ export async function claimTask() {
       LEFT JOIN alliance_static alli ON q.entity_id = alli.alliance_id AND q.entity_type = 'alliance'
       WHERE (q.locked_until IS NULL OR q.locked_until < ${now})
       ORDER BY (
-        EXTRACT(EPOCH FROM (${now} - COALESCE(char.last_modified_at, corp.last_modified_at, alli.last_modified_at, q.created_at))) * 
-        (COALESCE(char.access_count, corp.access_count, alli.access_count, 0) + 1)
+        POWER(EXTRACT(EPOCH FROM (${now} - COALESCE(char.last_modified_at, corp.last_modified_at, alli.last_modified_at, q.created_at))) / 86400, 2) * 
+        LOG(COALESCE(char.access_count, corp.access_count, alli.access_count, 0) + 10)
       ) DESC
       LIMIT 1
       FOR UPDATE OF q SKIP LOCKED
