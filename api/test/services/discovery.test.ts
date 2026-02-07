@@ -3,6 +3,7 @@ import { initializeDatabase, sql } from '../../src/db/client.ts';
 import * as characterService from '../../src/services/character.ts';
 import { processQueueItem } from '../../src/services/discovery/worker.ts';
 import { setupLogger } from '../../src/utils/logger.ts';
+import { onDiscoveryEvent, offDiscoveryEvent } from '../../src/services/discovery/extraction.ts';
 
 Deno.test('Discovery Integration', async (t) => {
   await setupLogger();
@@ -17,11 +18,24 @@ Deno.test('Discovery Integration', async (t) => {
   await sql`DELETE FROM corporation_static WHERE corporation_id = 1000135`;
 
   await t.step('fetching a character should queue their corporation', async () => {
-    const result = await characterService.getById(2112024646); // CCP Foxfour
+    // 1. Setup event listener promise
+    const charId = 2112024646;
+    const extractionDone = new Promise<void>((resolve) => {
+      const cb = (id: number) => {
+        if (id === charId) {
+          offDiscoveryEvent('character_extracted', cb);
+          resolve();
+        }
+      };
+      onDiscoveryEvent('character_extracted', cb);
+    });
+
+    // 2. Trigger fetch
+    const result = await characterService.getById(charId); // CCP Foxfour
     if (result.isErr()) throw result.error;
 
-    // Small delay to allow async extractFromCharacter to finish
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 3. Wait for event instead of setTimeout
+    await extractionDone;
 
     const queued = await sql`
       SELECT * FROM discovery_queue
