@@ -17,10 +17,10 @@
 
 ## Phase 3: Service & Extraction Hardening
 
-- [ ] Task: Validated Extraction
-  - [ ] Sub-task: Update `api/src/services/discovery/extraction.ts` to use Zod schemas
-- [ ] Task: Unify Service Logic
-  - [ ] Sub-task: (Optional/Future) Consider a generic `BaseService` if Phase 2 yields significant patterns
+- [x] Task: Validated Extraction 3ce8c53
+  - [x] Sub-task: Update `api/src/services/discovery/extraction.ts` to use Zod schemas
+- [x] Task: Unify Service Logic 3ce8c53
+  - [x] Sub-task: (Handled via DB Layer Unification patterns)
 
 ## Phase 4: Final Verification
 

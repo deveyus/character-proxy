@@ -8,39 +8,34 @@ import { parseBioLinks } from '../../utils/bio_parser.ts';
 import { db as pg } from '../../db/client.ts';
 import { allianceStatic, characterStatic, corporationStatic } from '../../db/schema.ts';
 import { eq } from 'drizzle-orm';
-
-interface CharacterDiscoveryData {
-  corporation_id: number;
-  alliance_id?: number;
-}
-
-interface CorporationDiscoveryData {
-  ceo_id: number;
-  creator_id?: number;
-  alliance_id?: number;
-  description?: string;
-}
-
-interface AllianceDiscoveryData {
-  creator_id: number;
-  executor_corporation_id?: number;
-  description?: string;
-}
+import {
+  ESIAllianceHistorySchema,
+  ESIAllianceMembersSchema,
+  ESIAllianceSchema,
+  ESICorpHistorySchema,
+  ESICorporationSchema,
+} from '../../clients/esi_schemas.ts';
+import { logger } from '../../utils/logger.ts';
 
 /**
  * Analyzes a Character and queues related entities.
  */
-export async function extractFromCharacter(
-  id: number,
-  data: CharacterDiscoveryData,
-): Promise<void> {
+export async function extractFromCharacter(id: number, data: any): Promise<void> {
+  // We use any for input data but validation happens at extraction points
   if (data.corporation_id) await addToQueue(data.corporation_id, 'corporation');
   if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
-  const history = await getCharacterCorpHistory(id);
-  if (history.status === 'fresh') {
-    for (const entry of history.data) {
-      await addToQueue(entry.corporation_id, 'corporation');
+  const historyRes = await getCharacterCorpHistory(id);
+  if (historyRes.status === 'fresh') {
+    const history = ESICorpHistorySchema.safeParse(historyRes.data);
+    if (history.success) {
+      for (const entry of history.data) {
+        await addToQueue(entry.corporation_id, 'corporation');
+      }
+    } else {
+      logger.error('SYSTEM', `Invalid corp history from ESI for character ${id}`, {
+        error: history.error,
+      });
     }
   }
 
@@ -55,16 +50,28 @@ export async function extractFromCharacter(
  */
 export async function extractFromCorporation(
   id: number,
-  data: CorporationDiscoveryData,
+  rawData: any,
 ): Promise<void> {
+  const dataParse = ESICorporationSchema.safeParse(rawData);
+  if (!dataParse.success) {
+    logger.error('SYSTEM', `Invalid corporation data from ESI for ${id}`, {
+      error: dataParse.error,
+    });
+    return;
+  }
+  const data = dataParse.data;
+
   if (data.ceo_id) await addToQueue(data.ceo_id, 'character');
   if (data.creator_id) await addToQueue(data.creator_id, 'character');
   if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
-  const history = await getCorpAllianceHistory(id);
-  if (history.status === 'fresh') {
-    for (const entry of history.data) {
-      if (entry.alliance_id) await addToQueue(entry.alliance_id, 'alliance');
+  const historyRes = await getCorpAllianceHistory(id);
+  if (historyRes.status === 'fresh') {
+    const history = ESIAllianceHistorySchema.safeParse(historyRes.data);
+    if (history.success) {
+      for (const entry of history.data) {
+        if (entry.alliance_id) await addToQueue(entry.alliance_id, 'alliance');
+      }
     }
   }
 
@@ -82,14 +89,26 @@ export async function extractFromCorporation(
 /**
  * Analyzes an Alliance and queues related entities.
  */
-export async function extractFromAlliance(id: number, data: AllianceDiscoveryData): Promise<void> {
+export async function extractFromAlliance(id: number, rawData: any): Promise<void> {
+  const dataParse = ESIAllianceSchema.safeParse(rawData);
+  if (!dataParse.success) {
+    logger.error('SYSTEM', `Invalid alliance data from ESI for ${id}`, {
+      error: dataParse.error,
+    });
+    return;
+  }
+  const data = dataParse.data;
+
   if (data.creator_id) await addToQueue(data.creator_id, 'character');
   if (data.executor_corporation_id) await addToQueue(data.executor_corporation_id, 'corporation');
 
-  const members = await getAllianceMembers(id);
-  if (members.status === 'fresh') {
-    for (const corpId of members.data) {
-      await addToQueue(corpId, 'corporation');
+  const membersRes = await getAllianceMembers(id);
+  if (membersRes.status === 'fresh') {
+    const members = ESIAllianceMembersSchema.safeParse(membersRes.data);
+    if (members.success) {
+      for (const corpId of members.data) {
+        await addToQueue(corpId, 'corporation');
+      }
     }
   }
 
