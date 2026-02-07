@@ -1,0 +1,8 @@
+{
+  "track_id": "doc_hardening_20260207",
+  "type": "chore",
+  "status": "new",
+  "created_at": "2026-02-07T08:45:00Z",
+  "updated_at": "2026-02-07T08:45:00Z",
+  "description": "Fix up JSDoc comments, more precise language, arguments, return values, performance notes for slow functions, usage examples across the whole project."
+}
