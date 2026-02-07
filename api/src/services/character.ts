@@ -55,6 +55,7 @@ export async function getById(
 
       if (esiRes.status === 'fresh') {
         // 4a. 200 OK - Atomic update
+        // deno-lint-ignore no-explicit-any
         const transactionResult = await sql.begin(async (tx: any) => {
           const updateStatic = await db.upsertStatic({
             characterId: id,

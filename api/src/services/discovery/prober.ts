@@ -1,4 +1,3 @@
-import { sql } from '../../db/client.ts';
 import { findEntityGaps } from '../../db/utils.ts';
 import { getHWM } from './frontier.ts';
 import { addToQueue, getQueueDepth } from './queue.ts';
@@ -69,7 +68,7 @@ export async function runProberStep() {
 
   // --- 2. Handle Frontier (Brute Force forward) ---
   const lastIdState = await getState<{ last_id: number }>('prober_last_frontier_id');
-  let currentId = lastIdState.isOk() && lastIdState.value ? lastIdState.value.last_id : 2112000000;
+  const currentId = lastIdState.isOk() && lastIdState.value ? lastIdState.value.last_id : 2112000000;
   
   const hwm = await getHWM('character');
   if (currentId < hwm) {

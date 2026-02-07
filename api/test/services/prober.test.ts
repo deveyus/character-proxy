@@ -1,4 +1,4 @@
-import { assertEquals, assertNotEquals } from 'std/assert/mod.ts';
+import { assertEquals } from 'std/assert/mod.ts';
 import { initializeDatabase, sql } from '../../src/db/client.ts';
 import { runProberStep } from '../../src/services/discovery/prober.ts';
 

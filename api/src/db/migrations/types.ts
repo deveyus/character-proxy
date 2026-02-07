@@ -1,5 +1,3 @@
-import { sql } from '../client.ts';
-
 export interface Migration {
   version: number;
   description: string;

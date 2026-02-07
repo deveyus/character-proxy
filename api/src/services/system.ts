@@ -9,7 +9,7 @@ export interface SystemStatus {
   metrics: ReturnType<typeof metrics.getSnapshot>;
   workers: Array<{
     key: string;
-    value: any;
+    value: Record<string, unknown>;
     updatedAt: Date;
   }>;
   queueDepth: number;
@@ -37,6 +37,7 @@ export async function getSystemStatus(): Promise<Result<SystemStatus, Error>> {
     return {
       limiter,
       metrics: currentMetrics,
+      // deno-lint-ignore no-explicit-any
       workers: heartbeats as any,
       queueDepth: Number(queueRows[0]?.count || 0),
     };

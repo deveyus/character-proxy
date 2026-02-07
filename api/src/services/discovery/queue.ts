@@ -34,6 +34,7 @@ export async function addToQueue(
 export async function claimTask() {
   const now = new Date();
 
+  // deno-lint-ignore no-explicit-any
   return await sql.begin(async (tx: any) => {
     // We use a raw SQL fragment for the complex join/ordering to keep it efficient
     const rows = await tx`

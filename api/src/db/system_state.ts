@@ -19,9 +19,11 @@ export type SystemState = z.infer<typeof SystemStateSchema>;
  */
 export async function setState(key: string, value: unknown, tx: Tx = sql): Promise<Result<void, Error>> {
   return await wrapAsync(async () => {
+    // deno-lint-ignore no-explicit-any
+    const jsonValue = sql.json(value as any);
     await tx`
       INSERT INTO system_state (key, value, updated_at)
-      VALUES (${key}, ${sql.json(value as any)}, NOW())
+      VALUES (${key}, ${jsonValue}, NOW())
       ON CONFLICT (key) DO UPDATE SET
         value = EXCLUDED.value,
         updated_at = EXCLUDED.updated_at

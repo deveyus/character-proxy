@@ -50,6 +50,7 @@ export async function getById(
       );
 
       if (esiRes.status === 'fresh') {
+        // deno-lint-ignore no-explicit-any
         const transactionResult = await sql.begin(async (tx: any) => {
           const updateStatic = await db.upsertStatic({
             corporationId: id,
