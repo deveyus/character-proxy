@@ -9,6 +9,7 @@
 ## API & Communication
 
 - **API Framework:** **tRPC**. Used for end-to-end type safety between the Deno backend and any consumers (internal or external).
+- **Security:** **Dynamic API Key Management**. Database-backed registry with PQC-hardened hashing (**SHA3-512**) and key generation (**SHAKE256**). Includes in-memory TTL caching for high-performance validation.
 - **External API:** **Eve Online ESI**. The primary data source.
 
 ## Data Persistence
