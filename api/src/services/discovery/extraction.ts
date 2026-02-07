@@ -20,10 +20,12 @@ import { logger } from '../../utils/logger.ts';
 /**
  * Analyzes a Character and queues related entities.
  */
-export async function extractFromCharacter(id: number, data: any): Promise<void> {
-  // We use any for input data but validation happens at extraction points
-  if (data.corporation_id) await addToQueue(data.corporation_id, 'corporation');
-  if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
+export async function extractFromCharacter(id: number, data: unknown): Promise<void> {
+  // We use unknown for input data but validation happens at extraction points
+  // deno-lint-ignore no-explicit-any
+  const d = data as any; // Temporary cast for legacy access
+  if (d.corporation_id) await addToQueue(d.corporation_id, 'corporation');
+  if (d.alliance_id) await addToQueue(d.alliance_id, 'alliance');
 
   const historyRes = await getCharacterCorpHistory(id);
   if (historyRes.status === 'fresh') {
@@ -50,7 +52,7 @@ export async function extractFromCharacter(id: number, data: any): Promise<void>
  */
 export async function extractFromCorporation(
   id: number,
-  rawData: any,
+  rawData: unknown,
 ): Promise<void> {
   const dataParse = ESICorporationSchema.safeParse(rawData);
   if (!dataParse.success) {
@@ -89,7 +91,7 @@ export async function extractFromCorporation(
 /**
  * Analyzes an Alliance and queues related entities.
  */
-export async function extractFromAlliance(id: number, rawData: any): Promise<void> {
+export async function extractFromAlliance(id: number, rawData: unknown): Promise<void> {
   const dataParse = ESIAllianceSchema.safeParse(rawData);
   if (!dataParse.success) {
     logger.error('SYSTEM', `Invalid alliance data from ESI for ${id}`, {

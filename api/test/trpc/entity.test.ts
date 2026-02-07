@@ -6,11 +6,18 @@ import { client, db, initializeDatabase } from '../../src/db/client.ts';
 import * as schema from '../../src/db/schema.ts';
 import { eq } from 'drizzle-orm';
 import { CharacterEntity } from '../../src/db/character.ts';
+import { generateNewKey } from '../../src/services/auth.ts';
 
 Deno.test('tRPC Entity Procedures', async (t) => {
   await initializeDatabase();
+
+  // Create a test API key
+  const keyResult = await generateNewKey('Test Consumer');
+  if (keyResult.isErr()) throw keyResult.error;
+  const { rawKey } = keyResult.value;
+
   const ctx = createTRPCContext(
-    { req: new Request('http://localhost') } as unknown as FetchCreateContextFnOptions,
+    { req: new Request('http://localhost', { headers: { 'x-api-key': rawKey } }) } as unknown as FetchCreateContextFnOptions,
   );
   const caller = appRouter.createCaller(ctx);
   const originalFetch = globalThis.fetch;

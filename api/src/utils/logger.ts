@@ -1,6 +1,6 @@
 import * as log from 'std/log/mod.ts';
 
-export type LogTag = 'ESI' | 'DB' | 'CACHE' | 'SYSTEM';
+export type LogTag = 'ESI' | 'DB' | 'CACHE' | 'SYSTEM' | 'AUTH';
 
 /**
  * Custom formatter for OTel-ready JSON logs.
@@ -58,6 +58,10 @@ export async function setupLogger() {
         handlers: ['console'],
       },
       SYSTEM: {
+        level: 'INFO',
+        handlers: ['console'],
+      },
+      AUTH: {
         level: 'INFO',
         handlers: ['console'],
       },

@@ -1,4 +1,3 @@
-import { crypto } from 'std/crypto/mod.ts';
 import { encodeBase64 } from 'std/encoding/base64.ts';
 import { encodeHex } from 'std/encoding/hex.ts';
 import { db } from '../db/client.ts';
@@ -11,11 +10,11 @@ const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const keyCache = new Map<string, { isValid: boolean; expiry: number }>();
 
 /**
- * Hashes a raw API key using SHA3-512 for quantum resistance.
+ * Hashes a raw API key using SHA-512.
  */
 export async function hashKey(rawKey: string): Promise<string> {
   const data = new TextEncoder().encode(rawKey);
-  const hashBuffer = await crypto.subtle.digest('SHA3-512', data);
+  const hashBuffer = await crypto.subtle.digest('SHA-512', data);
   return encodeHex(hashBuffer);
 }
 
@@ -28,8 +27,8 @@ export async function generateNewKey(name: string): Promise<Result<{ rawKey: str
     // 1. Generate 32 bytes of high-entropy random data
     const entropy = crypto.getRandomValues(new Uint8Array(32));
     
-    // 2. Pass through SHAKE256 to derive the 64-byte key
-    const derivedBuffer = await crypto.subtle.digest('SHAKE256', entropy);
+    // 2. Pass through SHA-256 to derive the key bytes
+    const derivedBuffer = await crypto.subtle.digest('SHA-256', entropy);
     const rawKey = `cp_${encodeBase64(derivedBuffer).replace(/[+/=]/g, '').substring(0, 48)}`;
     
     // 3. Hash for storage
@@ -86,7 +85,7 @@ export async function validateKey(rawKey: string): Promise<boolean> {
 
     return isValid;
   } catch (error) {
-    logger.error('AUTH', `Validation error: ${error.message}`);
+    logger.error('AUTH', `Validation error: ${(error as Error).message}`);
     return false;
   }
 }
