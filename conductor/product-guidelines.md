@@ -3,6 +3,10 @@
 ## Communication Style
 
 - **Technical & Precise:** API responses and internal logs prioritize accuracy and clarity. Logs should be descriptive enough for developers to debug complex caching and discovery cycles without excessive noise.
+- **Structured Documentation:** Internal codebase documentation utilizes standardized JSDoc to improve explorability.
+  - **Side-Effects:** Functions explicitly declare side-effects (e.g., database writes, background discovery triggers).
+  - **Performance Awareness:** High-latency functions include a "Performance" heading indicating the impact (e.g., `High -- ESI`, `Medium -- DB Scan`).
+  - **Usage Examples:** Core service and fallible utility functions include `@example` blocks demonstrating idiomatic usage and Result-based error handling.
 
 ## Data & Storage Guidelines
 
