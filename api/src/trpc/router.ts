@@ -4,9 +4,8 @@ import { z } from 'zod';
 import * as characterService from '../services/character.ts';
 import * as corporationService from '../services/corporation.ts';
 import * as allianceService from '../services/alliance.ts';
+import * as systemService from '../services/system.ts';
 
-import { metrics } from '../utils/metrics.ts';
-import { getLimitState } from '../clients/esi_limiter.ts';
 import * as authService from '../services/auth.ts';
 
 const t = initTRPC.context<Context>().create();
@@ -77,27 +76,12 @@ export const appRouter = router({
       return { success: true };
     }),
 
-  getSystemStatus: protectedProcedure.query(async ({ ctx }) => {
-    const limiter = getLimitState();
-    const currentMetrics = metrics.getSnapshot();
-
-    // Fetch heartbeats from system_state
-    const heartbeats = await ctx.sql`
-      SELECT key, value, updated_at as "updatedAt"
-      FROM system_state 
-      WHERE key LIKE 'heartbeat_worker_%'
-    `;
-
-    const queueRows = await ctx.sql`
-      SELECT COUNT(*) as count FROM discovery_queue
-    `;
-
-    return {
-      limiter,
-      metrics: currentMetrics,
-      workers: heartbeats,
-      queueDepth: Number(queueRows[0]?.count || 0),
-    };
+  getSystemStatus: protectedProcedure.query(async () => {
+    const result = await systemService.getSystemStatus();
+    if (result.isErr()) {
+      throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: result.error.message });
+    }
+    return result.value;
   }),
 
   resolveById: protectedProcedure.input(z.object({
