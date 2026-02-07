@@ -71,10 +71,15 @@ export async function setupLogger() {
 
 /**
  * Typed logger wrapper to maintain consistent usage.
+ * Arguments are treated as structured attributes.
  */
 export const logger = {
-  info: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).info(msg, ...args),
-  warn: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).warn(msg, ...args),
-  error: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).error(msg, ...args),
-  debug: (tag: LogTag, msg: string, ...args: unknown[]) => log.getLogger(tag).debug(msg, ...args),
+  info: (tag: LogTag, msg: string, ...args: Record<string, unknown>[]) =>
+    log.getLogger(tag).info(msg, ...args),
+  warn: (tag: LogTag, msg: string, ...args: Record<string, unknown>[]) =>
+    log.getLogger(tag).warn(msg, ...args),
+  error: (tag: LogTag, msg: string, ...args: Record<string, unknown>[]) =>
+    log.getLogger(tag).error(msg, ...args),
+  debug: (tag: LogTag, msg: string, ...args: Record<string, unknown>[]) =>
+    log.getLogger(tag).debug(msg, ...args),
 };

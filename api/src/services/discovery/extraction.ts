@@ -12,6 +12,7 @@ import {
   ESIAllianceHistorySchema,
   ESIAllianceMembersSchema,
   ESIAllianceSchema,
+  ESICharacterSchema,
   ESICorpHistorySchema,
   ESICorporationSchema,
 } from '../../clients/esi_schemas.ts';
@@ -20,12 +21,18 @@ import { logger } from '../../utils/logger.ts';
 /**
  * Analyzes a Character and queues related entities.
  */
-export async function extractFromCharacter(id: number, data: unknown): Promise<void> {
-  // We use unknown for input data but validation happens at extraction points
-  // deno-lint-ignore no-explicit-any
-  const d = data as any; // Temporary cast for legacy access
-  if (d.corporation_id) await addToQueue(d.corporation_id, 'corporation');
-  if (d.alliance_id) await addToQueue(d.alliance_id, 'alliance');
+export async function extractFromCharacter(id: number, rawData: unknown): Promise<void> {
+  const dataParse = ESICharacterSchema.safeParse(rawData);
+  if (!dataParse.success) {
+    logger.error('SYSTEM', `Invalid character data from ESI for ${id}`, {
+      error: dataParse.error,
+    });
+    return;
+  }
+  const data = dataParse.data;
+
+  if (data.corporation_id) await addToQueue(data.corporation_id, 'corporation');
+  if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
   const historyRes = await getCharacterCorpHistory(id);
   if (historyRes.status === 'fresh') {

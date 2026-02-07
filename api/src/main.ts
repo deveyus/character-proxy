@@ -64,11 +64,9 @@ async function startServer() {
 
 if (import.meta.main) {
   startServer().catch((err) => {
-    logger.error(
-      'SYSTEM',
-      'Server failed to start',
-      err instanceof Error ? err : new Error(String(err)),
-    );
+    logger.error('SYSTEM', `Server initialization failed: ${err instanceof Error ? err.message : String(err)}`, {
+      error: err instanceof Error ? { message: err.message, stack: err.stack } : { message: String(err) },
+    });
     Deno.exit(1);
   });
 }
