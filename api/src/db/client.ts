@@ -15,14 +15,14 @@ const workerCount = parseInt(Deno.env.get('WORKER_COUNT') || '1');
 // We scale the pool size based on workers + a buffer for tRPC requests
 const MAX_POOL_SIZE = Math.max(10, workerCount + 10);
 
-export const client = connectionString
+export const sql = connectionString
   ? postgres(connectionString, { max: MAX_POOL_SIZE })
   : postgres({
     database: DB_NAME,
     max: MAX_POOL_SIZE,
   });
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(sql, { schema });
 
 /**
  * Ensures the database exists and all migrations are applied.
@@ -81,6 +81,6 @@ if (import.meta.main) {
     logger.error('DB', `Migration failed: ${result.error.message}`, { error: result.error });
     Deno.exit(1);
   }
-  await client.end();
+  await sql.end();
   Deno.exit(0);
 }

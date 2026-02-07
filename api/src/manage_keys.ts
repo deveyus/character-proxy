@@ -60,8 +60,8 @@ async function main() {
   }
 
   // Ensure DB connection closes
-  const { client } = await import('./db/client.ts');
-  await client.end();
+  const { sql } = await import('./db/client.ts');
+  await sql.end();
   Deno.exit(0);
 }
 
