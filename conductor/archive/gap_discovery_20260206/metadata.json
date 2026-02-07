@@ -1,0 +1,8 @@
+{
+  "track_id": "gap_discovery_20260206",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-02-06T23:50:00Z",
+  "updated_at": "2026-02-06T23:50:00Z",
+  "description": "Proactive ID space crawler to identify and backfill gaps in the character and corporation tables."
+}
