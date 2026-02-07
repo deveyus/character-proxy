@@ -1,7 +1,7 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
 import { appRouter } from './trpc/router.ts';
 import { createTRPCContext } from './trpc/context.ts';
-import { db, initializeDatabase } from './db/client.ts';
+import { initializeDatabase, sql } from './db/client.ts';
 import { hydrateNpcCorporations } from './db/hydration/npc_corps.ts';
 import { logger, setupLogger } from './utils/logger.ts';
 import { startDiscoveryWorker } from './services/discovery/worker.ts';
@@ -30,7 +30,7 @@ async function startServer() {
   await initializeLimiter();
 
   // Hydrate NPC corporations
-  const hydrationResult = await hydrateNpcCorporations(db);
+  const hydrationResult = await hydrateNpcCorporations(sql);
   if (hydrationResult.isErr()) {
     logger.warn('SYSTEM', `NPC corporation hydration failed: ${hydrationResult.error.message}`);
   }

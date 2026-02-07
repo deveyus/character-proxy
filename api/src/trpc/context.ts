@@ -1,4 +1,4 @@
-import { db } from '../db/client.ts';
+import { sql } from '../db/client.ts';
 import { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 
 /**
@@ -7,7 +7,7 @@ import { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
 export function createTRPCContext({ req }: FetchCreateContextFnOptions) {
   const apiKey = req.headers.get('x-api-key');
   return {
-    db,
+    sql,
     apiKey,
   };
 }

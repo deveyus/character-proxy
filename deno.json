@@ -3,18 +3,13 @@
     "dev": "deno run -A --watch api/src/main.ts",
     "test": "deno test -A",
     "build": "deno check api/src/main.ts",
-    "db:generate": "deno run -A --node-modules-dir npm:drizzle-kit generate",
-    "db:migrate": "deno run -A api/src/db/client.ts",
     "manage:keys": "deno run -A api/src/manage_keys.ts",
     "lint": "deno lint",
     "fmt": "deno fmt"
   },
   "imports": {
     "std/": "https://deno.land/std@0.224.0/",
-    "drizzle-orm": "npm:drizzle-orm@^0.39.1",
-    "drizzle-orm/": "npm:/drizzle-orm@0.39.1/",
     "postgres": "npm:postgres@^3.4.5",
-    "drizzle-kit": "npm:drizzle-kit@^0.30.4",
     "@trpc/server": "npm:@trpc/server@^10.45.2",
     "@trpc/client": "npm:@trpc/client@^10.45.2",
     "zod": "npm:zod@^3.23.8",

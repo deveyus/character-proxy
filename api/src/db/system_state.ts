@@ -21,7 +21,7 @@ export async function setState(key: string, value: unknown): Promise<Result<void
   return await wrapAsync(async () => {
     await sql`
       INSERT INTO system_state (key, value, updated_at)
-      VALUES (${key}, ${sql.json(value)}, NOW())
+      VALUES (${key}, ${sql.json(value as any)}, NOW())
       ON CONFLICT (key) DO UPDATE SET
         value = EXCLUDED.value,
         updated_at = EXCLUDED.updated_at

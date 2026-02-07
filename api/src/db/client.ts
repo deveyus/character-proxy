@@ -58,6 +58,14 @@ export async function initializeDatabase(): Promise<Result<void, Error>> {
       await sql.unsafe(content);
     }
 
+    // 4. Manually ensure constraints that might be missing from Drizzle's initial .sql files
+    // (Drizzle sometimes handles PKs via internal metadata instead of explicit SQL in early migrations)
+    try {
+      await sql`ALTER TABLE discovery_queue ADD PRIMARY KEY (entity_id, entity_type)`;
+    } catch (err) {
+      logger.info('DB', `Note: Could not add PK to discovery_queue (might already exist): ${(err as Error).message}`);
+    }
+
     logger.info('DB', 'Database initialized and schema up-to-date.');
     return Ok(undefined);
   } catch (error) {

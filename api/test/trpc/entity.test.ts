@@ -2,9 +2,7 @@ import { assertEquals } from 'std/assert/mod.ts';
 import { appRouter } from '../../src/trpc/router.ts';
 import { createTRPCContext } from '../../src/trpc/context.ts';
 import { FetchCreateContextFnOptions } from '@trpc/server/adapters/fetch';
-import { client, db, initializeDatabase } from '../../src/db/client.ts';
-import * as schema from '../../src/db/schema.ts';
-import { eq } from 'drizzle-orm';
+import { initializeDatabase, sql } from '../../src/db/client.ts';
 import { CharacterEntity } from '../../src/db/character.ts';
 import { generateNewKey } from '../../src/services/auth.ts';
 
@@ -79,10 +77,8 @@ Deno.test('tRPC Entity Procedures', async (t) => {
   } finally {
     globalThis.fetch = originalFetch;
     // Cleanup
-    await db.delete(schema.characterEphemeral).where(
-      eq(schema.characterEphemeral.characterId, charId),
-    );
-    await db.delete(schema.characterStatic).where(eq(schema.characterStatic.characterId, charId));
-    await client.end();
+    await sql`DELETE FROM character_ephemeral WHERE character_id = ${charId}`;
+    await sql`DELETE FROM character_static WHERE character_id = ${charId}`;
+    await sql.end();
   }
 });

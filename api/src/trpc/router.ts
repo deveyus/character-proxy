@@ -1,7 +1,6 @@
 import { initTRPC, TRPCError } from '@trpc/server';
 import { Context } from './context.ts';
 import { z } from 'zod';
-import { sql } from 'drizzle-orm';
 import * as characterService from '../services/character.ts';
 import * as corporationService from '../services/corporation.ts';
 import * as allianceService from '../services/alliance.ts';
@@ -83,21 +82,21 @@ export const appRouter = router({
     const currentMetrics = metrics.getSnapshot();
 
     // Fetch heartbeats from system_state
-    const heartbeats = await ctx.db.execute(sql`
-      SELECT key, value, updated_at 
+    const heartbeats = await ctx.sql`
+      SELECT key, value, updated_at as "updatedAt"
       FROM system_state 
       WHERE key LIKE 'heartbeat_worker_%'
-    `);
+    `;
 
-    const queueDepth = await ctx.db.execute(sql`
+    const queueRows = await ctx.sql`
       SELECT COUNT(*) as count FROM discovery_queue
-    `);
+    `;
 
     return {
       limiter,
       metrics: currentMetrics,
       workers: heartbeats,
-      queueDepth: queueDepth[0]?.count || 0,
+      queueDepth: Number(queueRows[0]?.count || 0),
     };
   }),
 

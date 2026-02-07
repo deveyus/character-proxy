@@ -1,8 +1,6 @@
 import { assertEquals } from 'std/assert/mod.ts';
 import { getById } from '../../src/services/character.ts';
-import { client, db, initializeDatabase } from '../../src/db/client.ts';
-import * as schema from '../../src/db/schema.ts';
-import { eq } from 'drizzle-orm';
+import { initializeDatabase, sql } from '../../src/db/client.ts';
 
 Deno.test('Character Service - getById', async (t) => {
   await initializeDatabase();
@@ -46,22 +44,16 @@ Deno.test('Character Service - getById', async (t) => {
     }
 
     // 3. Verify DB
-    const staticRec = await db.select().from(schema.characterStatic).where(
-      eq(schema.characterStatic.characterId, charId),
-    );
+    const staticRec = await sql`SELECT * FROM character_static WHERE character_id = ${charId}`;
     assertEquals(staticRec.length, 1);
     assertEquals(staticRec[0].etag, '"service-abc"');
 
-    const ephemeralRec = await db.select().from(schema.characterEphemeral).where(
-      eq(schema.characterEphemeral.characterId, charId),
-    );
+    const ephemeralRec = await sql`SELECT * FROM character_ephemeral WHERE character_id = ${charId}`;
     assertEquals(ephemeralRec.length, 1);
   });
 
   globalThis.fetch = originalFetch;
-  await db.delete(schema.characterEphemeral).where(
-    eq(schema.characterEphemeral.characterId, charId),
-  );
-  await db.delete(schema.characterStatic).where(eq(schema.characterStatic.characterId, charId));
-  await client.end();
+  await sql`DELETE FROM character_ephemeral WHERE character_id = ${charId}`;
+  await sql`DELETE FROM character_static WHERE character_id = ${charId}`;
+  await sql.end();
 });

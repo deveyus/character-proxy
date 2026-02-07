@@ -1,4 +1,4 @@
-import { db as defaultDb } from '../client.ts';
+import { sql as defaultSql } from '../client.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 import * as corporationService from '../../services/corporation.ts';
 import { logger } from '../../utils/logger.ts';
@@ -10,7 +10,7 @@ const HYDRATION_MAX_AGE = 7 * 24 * 60 * 60; // 7 days
  * Hydrates the database with NPC corporations from ESI.
  * Now uses the service layer to ensure consistent ledger and cache management.
  */
-export async function hydrateNpcCorporations(_db: typeof defaultDb): Promise<Result<void, Error>> {
+export async function hydrateNpcCorporations(_sql: typeof defaultSql): Promise<Result<void, Error>> {
   try {
     logger.info('SYSTEM', 'Hydrating NPC corporations...');
 
