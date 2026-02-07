@@ -10,7 +10,7 @@ This is a service used by other tools to access the Eve Online API; acting as an
 # Core Technical Goals
 
 - **Resilient Caching:** Implement a performance-focused caching layer for the Eve Swagger Interface (ESI) specifically designed to prevent rate-limiting issues.
-- **Inference-Based Discovery:** Automatically discover and crawl Characters, Corporations, and Alliances through data inference rather than direct scraping. **Note:** Market Data is explicitly out of scope.
+- **Proactive Discovery Engine:** Automatically discover and crawl Characters, Corporations, and Alliances through a hybrid of data inference and systematic ID space probing to backfill gaps in the historical record. **Note:** Market Data is explicitly out of scope.
 - **Historical Ledger:** Maintain a comprehensive log of changes for tracked entities over time.
 - **Smart Querying:** Provide "Just-In-Time" data retrieval that intelligently balances the current cache age against the specific freshness requirements of each incoming request.
 
