@@ -44,6 +44,39 @@ async function setVersion(version: number, tx: any): Promise<void> {
 }
 
 /**
+ * Verifies that the physical database structure matches the expected state for the current version.
+ */
+async function verifyPhysicalStructure(version: number): Promise<Result<void, Error>> {
+  if (version === 0) return Ok(void 0);
+
+  // For version 1+, we expect at least the core tables to exist
+  const coreTables = [
+    'character_static',
+    'character_ephemeral',
+    'corporation_static',
+    'corporation_ephemeral',
+    'alliance_static',
+    'alliance_ephemeral',
+    'discovery_queue',
+    'api_keys',
+  ];
+
+  const rows = await sql`
+    SELECT table_name 
+    FROM information_schema.tables 
+    WHERE table_schema = 'public' 
+    AND table_name IN ${sql(coreTables)}
+  `;
+
+  if (rows.length < coreTables.length) {
+    const missing = coreTables.filter(t => !rows.some(r => r.table_name === t));
+    return Err(new Error(`Database version is ${version}, but missing core tables: ${missing.join(', ')}`));
+  }
+
+  return Ok(void 0);
+}
+
+/**
  * Runs all pending migrations.
  */
 export async function runMigrations(migrations: Migration[]): Promise<Result<void, Error>> {
@@ -51,6 +84,13 @@ export async function runMigrations(migrations: Migration[]): Promise<Result<voi
     await ensureMigrationTable();
     const currentVersion = await getCurrentVersion();
     
+    // Physical Guard: Verify structure matches claimed version
+    const verification = await verifyPhysicalStructure(currentVersion);
+    if (verification.isErr()) {
+      logger.error('DB', `Physical verification failed: ${verification.error.message}`);
+      return verification;
+    }
+
     // Filter and sort pending migrations
     const pending = migrations
       .filter((m) => m.version > currentVersion)
@@ -66,7 +106,6 @@ export async function runMigrations(migrations: Migration[]): Promise<Result<voi
     for (const migration of pending) {
       logger.info('DB', `Applying migration ${migration.version}: ${migration.description}`);
       
-      // We run each migration in its own transaction to update the version atomically with the changes
       await sql.begin(async (tx) => {
         await migration.up(tx);
         await setVersion(migration.version, tx);
@@ -75,7 +114,7 @@ export async function runMigrations(migrations: Migration[]): Promise<Result<voi
       logger.info('DB', `Migration ${migration.version} applied successfully.`);
     }
 
-    return Ok(void 0);
+    return Ok(undefined);
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));
     logger.error('DB', `Migration runner failed: ${err.message}`, { error: err });

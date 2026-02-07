@@ -3,6 +3,7 @@ import { Err, Ok, Result } from 'ts-results-es';
 import { logger } from '../utils/logger.ts';
 import { runMigrations } from './migrations/runner.ts';
 import { migration as v1 } from './migrations/001_grand_baseline.ts';
+import { runAlignmentGuards } from './migrations/alignment.ts';
 
 // Configuration
 const DB_NAME = 'character_proxy';
@@ -40,7 +41,11 @@ export async function initializeDatabase(): Promise<Result<void, Error>> {
   const migrationResult = await runMigrations(migrations);
   if (migrationResult.isErr()) return migrationResult;
 
-  logger.info('DB', 'Database initialization complete.');
+  // Run integrity guards
+  const alignmentResult = await runAlignmentGuards();
+  if (alignmentResult.isErr()) return alignmentResult;
+
+  logger.info('DB', 'Database initialization and integrity checks complete.');
   return Ok(undefined);
 }
 
