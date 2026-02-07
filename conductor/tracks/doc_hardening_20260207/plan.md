@@ -13,17 +13,17 @@
 - [x] Task: Document ESI Client a0e670d
     - [x] Audit `api/src/clients/` (esi, esi_limiter, esi_schemas).
     - [x] Add `Performance: High -- ESI` notes and ESI path templates (e.g., `ESI: /.../`).
-- [~] Task: Document Auth & System Infrastructure
-    - [ ] Audit `api/src/services/auth.ts` and `api/src/services/system.ts`.
-    - [ ] Document side-effects (DB writes, key hashing) and performance implications.
-- [ ] Task: Conductor - User Manual Verification 'Client & Infrastructure' (Protocol in workflow.md)
+- [x] Task: Document Auth & System Infrastructure 68313f4
+    - [x] Audit `api/src/services/auth.ts` and `api/src/services/system.ts`.
+    - [x] Document side-effects (DB writes, key hashing) and performance implications.
+- [x] Task: Conductor - User Manual Verification 'Client & Infrastructure' (Protocol in workflow.md) b8c42cd
 
 ## Phase 3: Entity Services & Discovery
-- [ ] Task: Document Entity Services
-    - [ ] Audit `api/src/services/` (character, corporation, alliance).
-    - [ ] Add `@example` blocks showing `tRPC`-ready usage and `Result` handling.
-    - [ ] Mark background discovery triggers as side-effects.
-- [ ] Task: Document Discovery Engine
+- [x] Task: Document Entity Services 0e330bb
+    - [x] Audit `api/src/services/` (character, corporation, alliance).
+    - [x] Add `@example` blocks showing `tRPC`-ready usage and `Result` handling.
+    - [x] Mark background discovery triggers as side-effects.
+- [~] Task: Document Discovery Engine
     - [ ] Audit `api/src/services/discovery/` (extraction, frontier, maintenance, prober, queue, worker).
     - [ ] Document complex logic (binary search, gap detection) with performance notes.
 - [ ] Task: Conductor - User Manual Verification 'Entity Services & Discovery' (Protocol in workflow.md)
