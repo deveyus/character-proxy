@@ -21,7 +21,14 @@ export type ESIResponse<T> =
 const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
 /**
- * Checks the general status of the ESI API.
+ * Checks the general status of the EVE Swagger Interface (ESI).
+ * 
+ * Performance: High -- ESI
+ * ESI: /status/
+ * 
+ * Side-Effects: Updates the global API health state via `updateApiHealth`.
+ * 
+ * @returns {Promise<boolean>} True if ESI is reported as 'up'.
  */
 export async function checkApiStatus(): Promise<boolean> {
   try {
@@ -40,6 +47,17 @@ export async function checkApiStatus(): Promise<boolean> {
 
 /**
  * Internal function for a single ESI fetch attempt.
+ * 
+ * This function handles rate limit checking, metrics collection, and 
+ * error limit header processing.
+ * 
+ * Performance: High -- ESI
+ * 
+ * @template T
+ * @param {string} path - The relative ESI path.
+ * @param {string | null} [etag] - Optional E-Tag for conditional requests.
+ * @param {FetchPriority} [priority='user'] - Priority level for rate limiting.
+ * @returns {Promise<ESIResponse<T>>} The response from ESI.
  */
 async function fetchOnce<T>(
   path: string,
@@ -112,6 +130,15 @@ async function fetchOnce<T>(
 
 /**
  * Fetches an entity from ESI with E-Tag support, rate limit awareness, and smart retries.
+ * 
+ * Performance: High -- ESI
+ * Automatically handles exponential backoff for retryable errors (5xx, network).
+ * 
+ * @template T
+ * @param {string} path - The relative ESI path.
+ * @param {string | null} [etag] - Optional E-Tag for conditional requests.
+ * @param {FetchPriority} [priority='user'] - Priority level for rate limiting.
+ * @returns {Promise<ESIResponse<T>>} The final response after retries.
  */
 export async function fetchEntity<T>(
   path: string,
@@ -184,6 +211,13 @@ export interface AllianceHistoryEntry {
 
 /**
  * Fetches a character's corporation history.
+ * 
+ * Performance: High -- ESI
+ * ESI: /characters/{id}/corporationhistory/
+ * 
+ * @param {number} characterId - Target character ID.
+ * @param {FetchPriority} [priority='background'] - Request priority.
+ * @returns {Promise<ESIResponse<CorpHistoryEntry[]>>} The historical corporation list.
  */
 export function getCharacterCorpHistory(
   characterId: number,
@@ -198,6 +232,13 @@ export function getCharacterCorpHistory(
 
 /**
  * Fetches a corporation's alliance history.
+ * 
+ * Performance: High -- ESI
+ * ESI: /corporations/{id}/alliancehistory/
+ * 
+ * @param {number} corporationId - Target corporation ID.
+ * @param {FetchPriority} [priority='background'] - Request priority.
+ * @returns {Promise<ESIResponse<AllianceHistoryEntry[]>>} The historical alliance list.
  */
 export function getCorpAllianceHistory(
   corporationId: number,
@@ -212,6 +253,13 @@ export function getCorpAllianceHistory(
 
 /**
  * Fetches an alliance's member corporations.
+ * 
+ * Performance: High -- ESI
+ * ESI: /alliances/{id}/corporations/
+ * 
+ * @param {number} allianceId - Target alliance ID.
+ * @param {FetchPriority} [priority='background'] - Request priority.
+ * @returns {Promise<ESIResponse<number[]>>} A list of member corporation IDs.
  */
 export function getAllianceMembers(
   allianceId: number,

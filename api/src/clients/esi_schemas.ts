@@ -1,5 +1,9 @@
 import { z } from 'zod';
 
+/**
+ * Validates the primary character identity data from ESI.
+ * ESI: /characters/{id}/
+ */
 export const ESICharacterSchema = z.object({
   name: z.string(),
   birthday: z.string(),
@@ -12,6 +16,10 @@ export const ESICharacterSchema = z.object({
   description: z.string().optional(),
 });
 
+/**
+ * Validates corporation identity and metadata from ESI.
+ * ESI: /corporations/{id}/
+ */
 export const ESICorporationSchema = z.object({
   name: z.string(),
   ticker: z.string(),
@@ -25,6 +33,10 @@ export const ESICorporationSchema = z.object({
   date_terminated: z.string().optional(),
 });
 
+/**
+ * Validates alliance identity and metadata from ESI.
+ * ESI: /alliances/{id}/
+ */
 export const ESIAllianceSchema = z.object({
   name: z.string(),
   ticker: z.string(),
@@ -38,6 +50,10 @@ export const ESIAllianceSchema = z.object({
   date_terminated: z.string().optional(),
 });
 
+/**
+ * Validates a character's corporation history timeline.
+ * ESI: /characters/{id}/corporationhistory/
+ */
 export const ESICorpHistorySchema = z.array(z.object({
   corporation_id: z.number(),
   record_id: z.number(),
@@ -45,12 +61,20 @@ export const ESICorpHistorySchema = z.array(z.object({
   is_deleted: z.boolean().optional(),
 }));
 
+/**
+ * Validates a corporation's alliance history timeline.
+ * ESI: /corporations/{id}/alliancehistory/
+ */
 export const ESIAllianceHistorySchema = z.array(z.object({
   alliance_id: z.number().optional(),
   start_date: z.string(),
   is_deleted: z.boolean().optional(),
 }));
 
+/**
+ * Validates the list of member corporations in an alliance.
+ * ESI: /alliances/{id}/corporations/
+ */
 export const ESIAllianceMembersSchema = z.array(z.number());
 
 export type ESICharacter = z.infer<typeof ESICharacterSchema>;
