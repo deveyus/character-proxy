@@ -1,72 +1,37 @@
-import { db } from './client.ts';
 import * as schema from './schema.ts';
-import { desc, eq } from 'drizzle-orm';
-import { PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import { Err, Ok, Result } from 'ts-results-es';
-import { uuidv7 } from 'uuidv7';
+import { Result } from 'ts-results-es';
+import {
+  appendEphemeralEntity,
+  EntityConfig,
+  resolveEntityById,
+  resolveEntityByName,
+  Tx,
+  upsertStaticEntity,
+} from './base.ts';
 
 export type AllianceEntity =
   & typeof schema.allianceStatic.$inferSelect
   & typeof schema.allianceEphemeral.$inferSelect;
 
-type Tx = PostgresJsDatabase<typeof schema>;
+const config: EntityConfig<typeof schema.allianceStatic, typeof schema.allianceEphemeral> = {
+  staticTable: schema.allianceStatic,
+  ephemeralTable: schema.allianceEphemeral,
+  idColumn: (t) => t.allianceId,
+  nameColumn: (t) => t.name,
+};
 
 /**
  * Resolves an alliance by its EVE ID.
  */
-export async function resolveById(
-  id: number,
-): Promise<Result<AllianceEntity | null, Error>> {
-  try {
-    const result = await db
-      .select()
-      .from(schema.allianceStatic)
-      .innerJoin(
-        schema.allianceEphemeral,
-        eq(schema.allianceStatic.allianceId, schema.allianceEphemeral.allianceId),
-      )
-      .where(eq(schema.allianceStatic.allianceId, id))
-      .orderBy(desc(schema.allianceEphemeral.recordedAt))
-      .limit(1);
-
-    if (result.length === 0) {
-      return Ok(null);
-    }
-
-    const { alliance_static, alliance_ephemeral } = result[0];
-    return Ok({ ...alliance_static, ...alliance_ephemeral });
-  } catch (error) {
-    return Err(error instanceof Error ? error : new Error(String(error)));
-  }
+export async function resolveById(id: number): Promise<Result<AllianceEntity | null, Error>> {
+  return await resolveEntityById(config, id);
 }
 
 /**
  * Resolves an alliance by its name.
  */
-export async function resolveByName(
-  name: string,
-): Promise<Result<AllianceEntity | null, Error>> {
-  try {
-    const result = await db
-      .select()
-      .from(schema.allianceStatic)
-      .innerJoin(
-        schema.allianceEphemeral,
-        eq(schema.allianceStatic.allianceId, schema.allianceEphemeral.allianceId),
-      )
-      .where(eq(schema.allianceStatic.name, name))
-      .orderBy(desc(schema.allianceEphemeral.recordedAt))
-      .limit(1);
-
-    if (result.length === 0) {
-      return Ok(null);
-    }
-
-    const { alliance_static, alliance_ephemeral } = result[0];
-    return Ok({ ...alliance_static, ...alliance_ephemeral });
-  } catch (error) {
-    return Err(error instanceof Error ? error : new Error(String(error)));
-  }
+export async function resolveByName(name: string): Promise<Result<AllianceEntity | null, Error>> {
+  return await resolveEntityByName(config, name);
 }
 
 /**
@@ -74,19 +39,9 @@ export async function resolveByName(
  */
 export async function upsertStatic(
   values: typeof schema.allianceStatic.$inferInsert,
-  tx: Tx = db,
+  tx?: Tx,
 ): Promise<Result<void, Error>> {
-  try {
-    await tx.insert(schema.allianceStatic)
-      .values(values)
-      .onConflictDoUpdate({
-        target: schema.allianceStatic.allianceId,
-        set: values,
-      });
-    return Ok(void 0);
-  } catch (error) {
-    return Err(error instanceof Error ? error : new Error(String(error)));
-  }
+  return await upsertStaticEntity(schema.allianceStatic, schema.allianceStatic.allianceId, values, tx);
 }
 
 /**
@@ -94,16 +49,7 @@ export async function upsertStatic(
  */
 export async function appendEphemeral(
   values: Omit<typeof schema.allianceEphemeral.$inferInsert, 'recordId' | 'recordedAt'>,
-  tx: Tx = db,
+  tx?: Tx,
 ): Promise<Result<void, Error>> {
-  try {
-    await tx.insert(schema.allianceEphemeral).values({
-      ...values,
-      recordId: uuidv7(),
-      recordedAt: new Date(),
-    });
-    return Ok(void 0);
-  } catch (error) {
-    return Err(error instanceof Error ? error : new Error(String(error)));
-  }
+  return await appendEphemeralEntity(schema.allianceEphemeral, values, tx);
 }

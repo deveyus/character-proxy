@@ -9,11 +9,11 @@
 
 ## Phase 2: DB Layer Unification
 
-- [ ] Task: Generic Base DB
-  - [ ] Sub-task: Create `api/src/db/base.ts` with generic entity operations
-- [ ] Task: Refactor Entity DB Modules
-  - [ ] Sub-task: Update `character.ts`, `corporation.ts`, and `alliance.ts` to use base generics
-  - [ ] Sub-task: Verify all existing tests pass
+- [x] Task: Generic Base DB 72bba80
+  - [x] Sub-task: Create `api/src/db/base.ts` with generic entity operations
+- [x] Task: Refactor Entity DB Modules 72bba80
+  - [x] Sub-task: Update `character.ts`, `corporation.ts`, and `alliance.ts` to use base generics
+  - [x] Sub-task: Verify all existing tests pass
 
 ## Phase 3: Service & Extraction Hardening
 
