@@ -1,3 +1,6 @@
+/**
+ * Represents an entity match discovered within a text block.
+ */
 export interface DiscoveryMatch {
   id: number;
   type: 'character' | 'corporation' | 'alliance';
@@ -10,8 +13,18 @@ const TYPE_MAP: Record<string, 'character' | 'corporation' | 'alliance'> = {
 };
 
 /**
- * Parses EVE Online showinfo links from text.
- * Format: <a href="showinfo:typeID//itemID">...</a>
+ * Extracts EVE Online `showinfo:` links from raw HTML or text.
+ * 
+ * Performance: Low -- Regex Scan
+ * Scans the provided text using a global regular expression. Deduplicates matches 
+ * before returning.
+ * 
+ * @param {string} text - The raw text or HTML (e.g., a character bio) to scan.
+ * @returns {DiscoveryMatch[]} A list of unique discovered entity IDs and their types.
+ * 
+ * @example
+ * const links = parseBioLinks('<a href="showinfo:1373//2112024646">Me</a>');
+ * // Returns [{ id: 2112024646, type: 'character' }]
  */
 export function parseBioLinks(text: string): DiscoveryMatch[] {
   if (!text) return [];
