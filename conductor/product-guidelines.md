@@ -18,8 +18,10 @@
 ## Performance & Reliability
 
 - **Resource Management:** Balance data freshness with ESI rate-limit conservation. Avoid redundant API calls that could be better utilized for the discovery/crawling engine.
+- **Strict Limiter Coordination:** Background processes must re-synchronize the global ESI error budget from the database before every request to prevent cross-worker exhaustion.
 - **Smart Retries:** Implement **Exponential Backoff** for all ESI interactions to respect API health.
 - **Intelligent Prioritization:** Utilize a non-linear priority formula—weighting time exponentially and user demand logarithmically—to ensure critical data remains fresh while eventually guaranteeing that all known entities are crawled.
+- **Event-Driven Reactivity:** Discovery workers are reactive, responding instantly to new queue items via an internal event bus to eliminate polling latency.
 - **Resilience:** In the event of ESI downtime, serve cached data (Graceful Degradation) while explicitly marking the response as stale.
 
 ## User Interface (Management Frontend)
