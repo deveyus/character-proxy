@@ -21,7 +21,27 @@ interface ESICorporation {
 }
 
 /**
- * Gets a corporation by ID.
+ * Retrieves a corporation by its EVE ID, utilizing a local cache with ESI fallback.
+ * 
+ * Side-Effects:
+ * - Increments `access_count` in the database.
+ * - Writes fresh ESI data to `corporation_static` and `corporation_ephemeral`.
+ * - Triggers asynchronous background discovery analysis (`extractFromCorporation`).
+ * - Marks known corporations as terminated if ESI returns a 404 or indicates closure.
+ * 
+ * Performance: High -- ESI (on cache miss) | Medium -- DB Join (on cache hit)
+ * 
+ * @param {number} id - The EVE Online corporation ID.
+ * @param {number} [maxAge] - Optional freshness requirement.
+ * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
+ * @returns {Promise<Result<ServiceResponse<db.CorporationEntity>, Error>>} 
+ * A result containing the corporation data and cache metadata.
+ * 
+ * @example
+ * const result = await corporationService.getById(1000171);
+ * if (result.isOk() && result.value.data) {
+ *   console.log(`CEO ID: ${result.value.data.ceoId}`);
+ * }
  */
 export async function getById(
   id: number,
@@ -192,7 +212,16 @@ export async function getById(
 }
 
 /**
- * Resolves a corporation by its name.
+ * Resolves a corporation by its exact name.
+ * 
+ * Side-Effects: Triggers `getById` if the name is found locally.
+ * Performance: Medium -- DB Lookup | High -- ESI (on internal getById miss)
+ * 
+ * @param {string} name - The exact corporation name.
+ * @param {number} [maxAge] - Optional freshness requirement.
+ * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
+ * @returns {Promise<Result<ServiceResponse<db.CorporationEntity>, Error>>} 
+ * A result containing the corporation data.
  */
 export async function getByName(
   name: string,

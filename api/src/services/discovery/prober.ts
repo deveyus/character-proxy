@@ -8,7 +8,13 @@ const PROBE_BLOCK_SIZE = 1000;
 const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
 /**
- * Probes a list of IDs via ESI /universe/names/
+ * Validates a list of EVE IDs using the bulk name lookup endpoint.
+ * 
+ * Performance: High -- ESI (Bulk Probe)
+ * ESI: /universe/names/
+ * 
+ * @param {number[]} ids - List of up to 1000 IDs to probe.
+ * @returns {Promise<number[]>} The subset of IDs that correspond to valid discoverable entities.
  */
 async function probeIds(ids: number[]): Promise<number[]> {
   if (ids.length === 0) return [];
@@ -37,10 +43,16 @@ async function probeIds(ids: number[]): Promise<number[]> {
 }
 
 /**
- * Runs a single step of the prober.
- * 1. Checks if queue is empty.
- * 2. Tries to find internal gaps.
- * 3. If no gaps, scans the frontier (HWM).
+ * Executes a single step of the proactive prober.
+ * 
+ * Logic:
+ * 1. Checks `getQueueDepth()`. Yields if the discovery queue is active.
+ * 2. Attempts to find internal gaps in the character static table.
+ * 3. If no internal gaps, continues forward from the last known frontier ID.
+ * 4. Queues any discovered valid IDs.
+ * 
+ * Performance: High -- ESI (Bulk Probe)
+ * Side-Effects: Triggers `addToQueue` for discovered IDs.
  */
 export async function runProberStep() {
   const depth = await getQueueDepth();
@@ -89,7 +101,7 @@ export async function runProberStep() {
 }
 
 /**
- * Background loop for the prober.
+ * Starts the proactive Gap Prober background loop.
  */
 export async function startProber() {
   logger.info('SYSTEM', 'Gap Prober started.');

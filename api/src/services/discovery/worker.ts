@@ -10,13 +10,31 @@ import { sql } from '../../db/client.ts';
 import { metrics } from '../../utils/metrics.ts';
 import { setState } from '../../db/system_state.ts';
 
+/**
+ * Supported entity types for the discovery worker.
+ */
 export type EntityType = 'character' | 'corporation' | 'alliance';
 
 const MAX_ATTEMPTS = 5;
 const HEARTBEAT_INTERVAL_MS = 60 * 1000;
 
 /**
- * Processes a single item from the queue.
+ * Orchestrates the processing of a single task from the discovery queue.
+ * 
+ * Logic:
+ * 1. Claims a task using `claimTask()`.
+ * 2. Resolves the entity via the appropriate service (e.g., `characterService`).
+ * 3. Handles successful resolution by deleting the task.
+ * 4. Categorizes errors (404, transient, poison pill) and updates queue state accordingly.
+ * 
+ * Performance: High -- ESI (Background Priority)
+ * Side-Effects:
+ * - Triggers entity resolution services.
+ * - Updates `discovery_queue` status (mark complete or fail).
+ * - Increments `discovery_queue_processed_total` metrics.
+ * 
+ * @returns {Promise<Result<boolean, Error>>} 
+ * A result containing true if a task was processed, false if the queue was empty or ESI is down.
  */
 export async function processQueueItem(): Promise<Result<boolean, Error>> {
   try {
@@ -96,7 +114,11 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
 }
 
 /**
- * Background loop for processing the discovery queue.
+ * Starts a background discovery worker loop.
+ * 
+ * Side-Effects: Periodically persists heartbeat state to `system_state`.
+ * 
+ * @param {number} [workerId=0] - Unique identifier for this worker instance.
  */
 export async function startDiscoveryWorker(workerId = 0) {
   logger.info('SYSTEM', `Discovery worker ${workerId} started.`);

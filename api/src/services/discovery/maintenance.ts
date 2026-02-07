@@ -3,8 +3,17 @@ import { logger } from '../../utils/logger.ts';
 import { addToQueue } from './queue.ts';
 
 /**
- * Periodically scans static tables and re-queues entities that need a refresh
- * based on their age and access frequency.
+ * Periodically identifies entities that have exceeded the freshness threshold and re-queues them.
+ * 
+ * Logic:
+ * 1. Scans `character_static`, `corporation_static`, and `alliance_static`.
+ * 2. Filters for entities where the intelligent urgency formula returns > 1.0.
+ * 3. Adds selected IDs back to the `discovery_queue`.
+ * 
+ * Performance: Medium -- DB Scan
+ * Executes full scans over the `static` entity tables. Limit 100 per cycle.
+ * 
+ * Side-Effects: Triggers `addToQueue` for discovered stale IDs.
  */
 export async function requeueStaleEntities() {
   logger.info('SYSTEM', 'Maintenance: Checking for stale entities to re-queue...');
@@ -52,8 +61,11 @@ export async function requeueStaleEntities() {
 
   logger.info('SYSTEM', 'Maintenance: Re-queue check complete.');
 }
+
 /**
- * Starts the maintenance loop.
+ * Starts the long-running maintenance worker loop.
+ * 
+ * Runs every hour by default.
  */
 export async function startMaintenanceWorker() {
   while (true) {

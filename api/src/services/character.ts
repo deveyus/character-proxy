@@ -22,7 +22,34 @@ interface ESICharacter {
 }
 
 /**
- * Gets a character by ID, using local cache or fetching from ESI.
+ * Retrieves a character by its EVE ID, utilizing a local cache with ESI fallback.
+ * 
+ * This is a "Stale-While-Revalidate" pattern:
+ * 1. Checks local DB for the entity.
+ * 2. If missing or expired (based on `maxAge`), fetches fresh data from ESI.
+ * 3. Atomicly updates local storage and triggers background discovery.
+ * 4. Returns the most recent data available.
+ * 
+ * Side-Effects:
+ * - Increments `access_count` in the database.
+ * - Writes fresh ESI data to `character_static` and `character_ephemeral`.
+ * - Triggers asynchronous background discovery analysis (`extractFromCharacter`).
+ * - Marks known characters as terminated if ESI returns a 404.
+ * 
+ * Performance: High -- ESI (on cache miss) | Medium -- DB Join (on cache hit)
+ * 
+ * @param {number} id - The EVE Online character ID.
+ * @param {number} [maxAge] - Optional freshness requirement in seconds.
+ * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
+ * @returns {Promise<Result<ServiceResponse<db.CharacterEntity>, Error>>} 
+ * A result containing the character data and cache metadata.
+ * 
+ * @example
+ * const result = await characterService.getById(2112024646, 3600);
+ * if (result.isOk()) {
+ *   const { data, metadata } = result.value;
+ *   console.log(`Character: ${data?.name} (Source: ${metadata.source})`);
+ * }
  */
 export async function getById(
   id: number,
@@ -207,7 +234,18 @@ export async function getById(
 }
 
 /**
- * Resolves a character by its name.
+ * Resolves a character by its exact name.
+ * 
+ * Side-Effects: Triggers `getById` if the name is found locally, inheriting all its 
+ * side-effects including cache refreshes and discovery triggers.
+ * 
+ * Performance: Medium -- DB Lookup | High -- ESI (on internal getById miss)
+ * 
+ * @param {string} name - The exact character name.
+ * @param {number} [maxAge] - Optional freshness requirement.
+ * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
+ * @returns {Promise<Result<ServiceResponse<db.CharacterEntity>, Error>>} 
+ * A result containing the character data or a stale placeholder.
  */
 export async function getByName(
   name: string,

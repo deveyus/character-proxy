@@ -9,7 +9,15 @@ const CORP_MIN = 98000000;
 const CORP_MAX = 105000000; // Future buffer
 
 /**
- * Binary search to find the High Water Mark (HWM) of an entity ID space.
+ * Performs an asynchronous binary search to find the High Water Mark (HWM) of an entity ID space.
+ * 
+ * Performance: High -- ESI (Binary Search)
+ * Executes multiple sequential ESI probes to identify the upper bound of valid IDs.
+ * 
+ * @param {string} pathPrefix - The ESI endpoint path (e.g., '/characters/').
+ * @param {number} min - Lower bound of the search range.
+ * @param {number} max - Upper bound of the search range.
+ * @returns {Promise<number>} The highest valid EVE ID found.
  */
 async function binarySearchHWM(
   pathPrefix: string,
@@ -41,7 +49,10 @@ async function binarySearchHWM(
 }
 
 /**
- * Scans for the High Water Mark of characters and corporations.
+ * Periodically scans ESI to identify the current "Frontier" (maximum valid IDs).
+ * 
+ * Side-Effects: Persists `character_hwm` and `corporation_hwm` to `system_state`.
+ * Performance: High -- ESI (Binary Search)
  */
 export async function refreshFrontierHWM() {
   logger.info('SYSTEM', 'Refreshing Frontier HWM...');
@@ -58,7 +69,12 @@ export async function refreshFrontierHWM() {
 }
 
 /**
- * Returns the current HWM from system state.
+ * Retrieves the last-calculated High Water Mark from system state.
+ * 
+ * Performance: Low -- DB Read
+ * 
+ * @param {'character' | 'corporation'} type - Target entity type.
+ * @returns {Promise<number>} The persisted HWM or a safe baseline minimum.
  */
 export async function getHWM(type: 'character' | 'corporation'): Promise<number> {
   const key = `${type}_hwm`;

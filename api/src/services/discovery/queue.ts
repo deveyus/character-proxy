@@ -1,12 +1,25 @@
 import { sql } from '../../db/client.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 
+/**
+ * Supported entity types for the discovery queue.
+ */
 export type EntityType = 'character' | 'corporation' | 'alliance';
 
+/**
+ * Standard duration for which a claimed task remains locked.
+ */
 const LOCK_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 /**
- * Adds an entity to the discovery queue.
+ * Adds an entity to the discovery queue for eventual crawling.
+ * 
+ * Side-Effects: Performs a database INSERT into `discovery_queue` with 
+ * ON CONFLICT DO NOTHING.
+ * 
+ * @param {number} entityId - The EVE ID of the target entity.
+ * @param {EntityType} entityType - The category of the entity.
+ * @returns {Promise<Result<void, Error>>} Success or database error.
  */
 export async function addToQueue(
   entityId: number,
@@ -27,9 +40,18 @@ export async function addToQueue(
 }
 
 /**
- * Atomic claim of a task from the queue.
- * Finds one item that is not locked, locks it, and returns it.
- * Prioritizes based on: (Age * (AccessCount + 1))
+ * Performs an atomic claim of the most urgent pending task from the queue.
+ * 
+ * Logic:
+ * 1. Finds one unlocked item or item with an expired lock.
+ * 2. Joins with static tables to calculate urgency based on the intelligent priority formula.
+ * 3. Uses `SKIP LOCKED` to allow multiple concurrent workers without contention.
+ * 4. Atomically updates the `locked_until` timestamp.
+ * 
+ * Performance: Medium -- DB Order By
+ * Executes a complex join and calculation over the active queue.
+ * 
+ * @returns {Promise<Object | null>} The claimed task data or null if the queue is empty.
  */
 export async function claimTask() {
   const now = new Date();
@@ -75,7 +97,11 @@ export async function claimTask() {
 }
 
 /**
- * Returns the number of items currently in the queue.
+ * Returns the total number of tasks currently residing in the queue.
+ * 
+ * Performance: Low -- DB Count
+ * 
+ * @returns {Promise<number>} Total count of queue entries.
  */
 export async function getQueueDepth(): Promise<number> {
   const rows = await sql`SELECT COUNT(*) as count FROM discovery_queue`;
@@ -83,7 +109,12 @@ export async function getQueueDepth(): Promise<number> {
 }
 
 /**
- * Deletes a completed item from the queue.
+ * Removes a task from the queue upon successful processing.
+ * 
+ * Side-Effects: Performs a database DELETE on `discovery_queue`.
+ * 
+ * @param {number} entityId - Target entity EVE ID.
+ * @param {EntityType} entityType - Target entity category.
  */
 export async function markAsCompleted(entityId: number, entityType: EntityType): Promise<void> {
   await sql`
@@ -93,7 +124,14 @@ export async function markAsCompleted(entityId: number, entityType: EntityType):
 }
 
 /**
- * Releases a failed task back to the queue.
+ * Releases a failed task back into the queue for future retry.
+ * 
+ * Side-Effects: Performs a database UPDATE, incrementing the attempt counter 
+ * and clearing the lock.
+ * 
+ * @param {number} entityId - Target entity EVE ID.
+ * @param {EntityType} entityType - Target entity category.
+ * @param {number} currentAttempts - Current failure count for this task.
  */
 export async function markAsFailed(
   entityId: number,

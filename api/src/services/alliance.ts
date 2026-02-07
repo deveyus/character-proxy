@@ -21,7 +21,28 @@ interface ESIAlliance {
 }
 
 /**
- * Gets an alliance by ID.
+ * Retrieves an alliance by its EVE ID, utilizing a local cache with ESI fallback.
+ * 
+ * Side-Effects:
+ * - Increments `access_count` in the database.
+ * - Writes fresh ESI data to `alliance_static` and `alliance_ephemeral`.
+ * - Triggers asynchronous background discovery analysis (`extractFromAlliance`).
+ * - Marks known alliances as terminated if ESI returns a 404 or a `date_terminated`.
+ * 
+ * Performance: High -- ESI (on cache miss) | Medium -- DB Join (on cache hit)
+ * 
+ * @param {number} id - The EVE Online alliance ID.
+ * @param {number} [maxAge] - Optional freshness requirement.
+ * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
+ * @returns {Promise<Result<ServiceResponse<db.AllianceEntity>, Error>>} 
+ * A result containing the alliance data and cache metadata.
+ * 
+ * @example
+ * const result = await allianceService.getById(99000001);
+ * if (result.isOk()) {
+ *   const alliance = result.value.data;
+ *   console.log(`${alliance?.name} [${alliance?.ticker}]`);
+ * }
  */
 export async function getById(
   id: number,
@@ -189,7 +210,16 @@ export async function getById(
 }
 
 /**
- * Resolves an alliance by its name.
+ * Resolves an alliance by its exact name.
+ * 
+ * Side-Effects: Triggers `getById` if the name is found locally.
+ * Performance: Medium -- DB Lookup | High -- ESI (on internal getById miss)
+ * 
+ * @param {string} name - The exact alliance name.
+ * @param {number} [maxAge] - Optional freshness requirement.
+ * @param {FetchPriority} [priority='user'] - Priority level for the ESI rate limiter.
+ * @returns {Promise<Result<ServiceResponse<db.AllianceEntity>, Error>>} 
+ * A result containing the alliance data.
  */
 export async function getByName(
   name: string,
