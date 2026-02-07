@@ -14,13 +14,13 @@ export async function requeueStaleEntities() {
 
   const now = new Date();
 
-  // We look for items where Urgency > 0.125 (roughly 6 hours at baseline)
+  // We look for items where Urgency > 1.0 (baseline 24 hours)
   // Formula: (Age / 86400)^2 * log10(AccessCount + 10)
 
   const staleCharacters = await sql`
     SELECT character_id as id
     FROM character_static
-    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 0.125)
+    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 1.0)
     LIMIT 100
   `;
 
@@ -31,7 +31,7 @@ export async function requeueStaleEntities() {
   const staleCorps = await sql`
     SELECT corporation_id as id
     FROM corporation_static
-    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 0.125)
+    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 1.0)
     LIMIT 100
   `;
 
@@ -42,7 +42,7 @@ export async function requeueStaleEntities() {
   const staleAlliances = await sql`
     SELECT alliance_id as id
     FROM alliance_static
-    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 0.125)
+    WHERE (last_discovery_at IS NULL OR (POWER(EXTRACT(EPOCH FROM (${now} - last_discovery_at)) / 86400, 2) * LOG(access_count + 10)) > 1.0)
     LIMIT 100
   `;
 
