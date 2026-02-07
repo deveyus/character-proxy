@@ -1,10 +1,7 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
-import { migrate } from 'npm:drizzle-orm@^0.39.1/postgres-js/migrator';
 import postgres from 'postgres';
 import { dirname, fromFileUrl, join } from 'std/path/mod.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 import { logger } from '../utils/logger.ts';
-import * as schema from './schema.ts';
 
 // Configuration
 const DB_NAME = 'character_proxy';
@@ -22,11 +19,9 @@ export const sql = connectionString
     max: MAX_POOL_SIZE,
   });
 
-export const db = drizzle(sql, { schema });
-
 /**
- * Ensures the database exists and all migrations are applied.
- * This should be called at application startup.
+ * Migration runner using Raw SQL.
+ * IMPLEMENTS "NUKE-AND-REPLACE" STRATEGY.
  */
 export async function initializeDatabase(): Promise<Result<void, Error>> {
   const dbResult = await ensureDatabaseExists();
@@ -35,10 +30,34 @@ export async function initializeDatabase(): Promise<Result<void, Error>> {
   const __dirname = dirname(fromFileUrl(import.meta.url));
   const migrationsFolder = join(__dirname, 'migrations');
 
-  logger.info('DB', 'Checking/Running migrations...');
+  logger.info('DB', 'RESETTING DATABASE (Nuke-and-Replace)...');
 
   try {
-    await migrate(db, { migrationsFolder });
+    // 1. Nuke existing schema
+    await sql`DROP SCHEMA public CASCADE`;
+    await sql`CREATE SCHEMA public`;
+    await sql`GRANT ALL ON SCHEMA public TO public`;
+
+    // 2. List all .sql files in the migrations directory
+    const files = [];
+    for await (const entry of Deno.readDir(migrationsFolder)) {
+      if (entry.isFile && entry.name.endsWith('.sql')) {
+        files.push(entry.name);
+      }
+    }
+
+    // Sort files to ensure they run in order (0000, 0001, etc.)
+    files.sort();
+
+    // 3. Execute each migration file
+    for (const file of files) {
+      const content = await Deno.readTextFile(join(migrationsFolder, file));
+      logger.info('DB', `Applying migration: ${file}`);
+      // Migration files from Drizzle might contain multiple statements
+      // postgres.js unsafe() can handle multiple statements if separated by semicolons
+      await sql.unsafe(content);
+    }
+
     logger.info('DB', 'Database initialized and schema up-to-date.');
     return Ok(undefined);
   } catch (error) {

@@ -1,7 +1,5 @@
 import { assertEquals } from 'std/assert/mod.ts';
-import { client, db, initializeDatabase } from '../../src/db/client.ts';
-import * as schema from '../../src/db/schema.ts';
-import { eq } from 'drizzle-orm';
+import { initializeDatabase, sql } from '../../src/db/client.ts';
 import { uuidv7 } from 'uuidv7';
 import { resolveById, resolveByName } from '../../src/db/character.ts';
 
@@ -12,30 +10,21 @@ Deno.test('Character DB Module', async (t) => {
   const corpId = 1000002;
 
   // Setup test data
-  await db.insert(schema.characterStatic).values({
-    characterId: charId,
-    name: 'Char Test Character',
-    birthday: new Date(),
-    gender: 'male',
-    raceId: 1,
-    bloodlineId: 1,
-  }).onConflictDoNothing();
+  await sql`
+    INSERT INTO character_static (character_id, name, birthday, gender, race_id, bloodline_id)
+    VALUES (${charId}, 'Char Test Character', ${new Date()}, 'male', 1, 1)
+    ON CONFLICT (character_id) DO NOTHING
+  `;
 
-  await db.insert(schema.characterEphemeral).values({
-    recordId: uuidv7(),
-    characterId: charId,
-    corporationId: corpId,
-    securityStatus: 5.0,
-    recordedAt: new Date(Date.now() - 10000), // 10s ago
-  });
+  await sql`
+    INSERT INTO character_ephemeral (record_id, character_id, corporation_id, security_status, recorded_at)
+    VALUES (${uuidv7()}, ${charId}, ${corpId}, 5.0, ${new Date(Date.now() - 10000)})
+  `;
 
-  await db.insert(schema.characterEphemeral).values({
-    recordId: uuidv7(),
-    characterId: charId,
-    corporationId: corpId,
-    securityStatus: 4.5,
-    recordedAt: new Date(), // Now
-  });
+  await sql`
+    INSERT INTO character_ephemeral (record_id, character_id, corporation_id, security_status, recorded_at)
+    VALUES (${uuidv7()}, ${charId}, ${corpId}, 4.5, ${new Date()})
+  `;
 
   try {
     await t.step(
@@ -62,10 +51,8 @@ Deno.test('Character DB Module', async (t) => {
     });
   } finally {
     // Cleanup
-    await db.delete(schema.characterEphemeral).where(
-      eq(schema.characterEphemeral.characterId, charId),
-    );
-    await db.delete(schema.characterStatic).where(eq(schema.characterStatic.characterId, charId));
-    await client.end();
+    await sql`DELETE FROM character_ephemeral WHERE character_id = ${charId}`;
+    await sql`DELETE FROM character_static WHERE character_id = ${charId}`;
+    await sql.end();
   }
 });

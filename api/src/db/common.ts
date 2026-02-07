@@ -8,16 +8,16 @@ import { z } from 'zod';
 // --- Base Types ---
 
 /**
- * Validates EVE IDs which are large positive integers.
- * ESI often returns them as numbers, but we store them as BIGINT.
- */
-export const EveIdSchema = z.number().int().positive();
-
-/**
  * PostgreSQL BIGINT returned by postgres.js can be string or number.
  * We normalize to number since EVE IDs fit within JavaScript's safe integer range (2^53 - 1).
  */
 export const DbBigIntSchema = z.union([z.number(), z.string()]).transform((val) => Number(val));
+
+/**
+ * Validates EVE IDs which are large positive integers.
+ * ESI often returns them as numbers, but we store them as BIGINT.
+ */
+export const EveIdSchema = DbBigIntSchema.pipe(z.number().int().positive());
 
 // --- Schema Fragments ---
 
