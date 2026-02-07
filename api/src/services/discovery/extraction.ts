@@ -64,6 +64,11 @@ export async function extractFromCharacter(id: number, rawData: unknown): Promis
     }
     if (data.alliance_id) await addToQueue(data.alliance_id, 'alliance');
 
+    const links = parseBioLinks(data.description || '');
+    for (const link of links) {
+      await addToQueue(link.id, link.type);
+    }
+
     const historyRes = await getCharacterCorpHistory(id);
     if (historyRes.status === 'fresh') {
       const history = ESICorpHistorySchema.safeParse(historyRes.data);

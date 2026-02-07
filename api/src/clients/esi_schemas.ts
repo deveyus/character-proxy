@@ -9,6 +9,7 @@ export const ESICharacterSchema = z.object({
   corporation_id: z.number(),
   alliance_id: z.number().optional(),
   security_status: z.number(),
+  description: z.string().optional(),
 });
 
 export const ESICorporationSchema = z.object({
