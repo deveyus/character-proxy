@@ -7,6 +7,7 @@ import { logger, setupLogger } from './utils/logger.ts';
 import { startDiscoveryWorker } from './services/discovery/worker.ts';
 import { initializeLimiter } from './clients/esi_limiter.ts';
 import { startMaintenanceWorker } from './services/discovery/maintenance.ts';
+import { startProber } from './services/discovery/prober.ts';
 
 const PORT = parseInt(Deno.env.get('PORT') || '4321');
 
@@ -48,6 +49,11 @@ async function startServer() {
   // Start maintenance worker
   startMaintenanceWorker().catch((err) => {
     logger.error('SYSTEM', 'Maintenance worker crashed', { error: err });
+  });
+
+  // Start proactive gap prober
+  startProber().catch((err) => {
+    logger.error('SYSTEM', 'Gap Prober crashed', { error: err });
   });
 
   Deno.serve({ port: PORT }, (req) => {
