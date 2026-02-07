@@ -4,8 +4,8 @@
 - [x] Task: Create Database Schema Reference Document 99c6a34
     - [x] Analyze `api/src/db/schema.ts` and existing migrations
     - [x] Create `conductor/db-schema-reference.md` documenting all tables, columns, and constraints
-- [ ] Task: Update Tech Stack Documentation
-    - [ ] Update `conductor/tech-stack.md` to reflect the move from Drizzle to Raw SQL + Zod
+- [x] Task: Update Tech Stack Documentation 792e7a1
+    - [x] Update `conductor/tech-stack.md` to reflect the move from Drizzle to Raw SQL + Zod
 - [ ] Task: Create Common DB Utilities
     - [ ] Implement `api/src/db/common.ts` with shared Zod schema fragments (Audit timestamps, ETags, Access Counters)
 - [ ] Task: Refactor DB Client
