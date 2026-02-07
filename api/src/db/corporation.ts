@@ -1,4 +1,4 @@
-import { sql } from './client.ts';
+import { sql, Tx } from './client.ts';
 import { z } from 'zod';
 import {
   DbBigIntSchema,
@@ -37,9 +37,6 @@ export const CorporationEntitySchema = CorporationStaticSchema.and(CorporationEp
 export type CorporationStatic = z.infer<typeof CorporationStaticSchema>;
 export type CorporationEphemeral = z.infer<typeof CorporationEphemeralSchema>;
 export type CorporationEntity = z.infer<typeof CorporationEntitySchema>;
-
-// deno-lint-ignore no-explicit-any
-export type Tx = any;
 
 /**
  * Resolves a corporation by its EVE ID.

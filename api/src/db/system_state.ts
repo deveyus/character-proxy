@@ -1,4 +1,4 @@
-import { sql } from './client.ts';
+import { sql, Tx } from './client.ts';
 import { z } from 'zod';
 import { Result } from 'ts-results-es';
 import { wrapAsync } from '../utils/result.ts';
@@ -17,9 +17,9 @@ export type SystemState = z.infer<typeof SystemStateSchema>;
  * Persists a key-value pair to the system state table.
  * The value is stored as JSONB.
  */
-export async function setState(key: string, value: unknown): Promise<Result<void, Error>> {
+export async function setState(key: string, value: unknown, tx: Tx = sql): Promise<Result<void, Error>> {
   return await wrapAsync(async () => {
-    await sql`
+    await tx`
       INSERT INTO system_state (key, value, updated_at)
       VALUES (${key}, ${sql.json(value as any)}, NOW())
       ON CONFLICT (key) DO UPDATE SET

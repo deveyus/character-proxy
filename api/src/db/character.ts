@@ -1,4 +1,4 @@
-import { sql } from './client.ts';
+import { sql, Tx } from './client.ts';
 import { z } from 'zod';
 import {
   DbBigIntSchema,
@@ -37,9 +37,6 @@ export const CharacterEntitySchema = CharacterStaticSchema.and(CharacterEphemera
 export type CharacterStatic = z.infer<typeof CharacterStaticSchema>;
 export type CharacterEphemeral = z.infer<typeof CharacterEphemeralSchema>;
 export type CharacterEntity = z.infer<typeof CharacterEntitySchema>;
-
-// deno-lint-ignore no-explicit-any
-export type Tx = any;
 
 /**
  * Resolves a character by its EVE ID.

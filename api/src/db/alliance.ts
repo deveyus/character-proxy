@@ -1,4 +1,4 @@
-import { sql } from './client.ts';
+import { sql, Tx } from './client.ts';
 import { z } from 'zod';
 import {
   DbBigIntSchema,
@@ -37,9 +37,6 @@ export const AllianceEntitySchema = AllianceStaticSchema.and(AllianceEphemeralSc
 export type AllianceStatic = z.infer<typeof AllianceStaticSchema>;
 export type AllianceEphemeral = z.infer<typeof AllianceEphemeralSchema>;
 export type AllianceEntity = z.infer<typeof AllianceEntitySchema>;
-
-// deno-lint-ignore no-explicit-any
-export type Tx = any;
 
 /**
  * Resolves an alliance by its EVE ID.
