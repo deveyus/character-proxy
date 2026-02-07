@@ -21,6 +21,8 @@ export const sql = connectionString
     max: MAX_POOL_SIZE,
   });
 
+export type Tx = typeof sql;
+
 // deno-lint-ignore no-explicit-any
 export const db = sql as any;
 
