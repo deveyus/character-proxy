@@ -2,10 +2,10 @@
 
 ## Phase 1: Foundation & Validation
 
-- [ ] Task: Unified Result Helper
-  - [ ] Sub-task: Implement `api/src/utils/result.ts` with `wrapAsync`
-- [ ] Task: ESI Schemas
-  - [ ] Sub-task: Create `api/src/clients/esi_schemas.ts` with Zod definitions for all extraction endpoints
+- [x] Task: Unified Result Helper 7b1e364
+  - [x] Sub-task: Implement `api/src/utils/result.ts` with `wrapAsync`
+- [x] Task: ESI Schemas 7b1e364
+  - [x] Sub-task: Create `api/src/clients/esi_schemas.ts` with Zod definitions for all extraction endpoints
 
 ## Phase 2: DB Layer Unification
 
