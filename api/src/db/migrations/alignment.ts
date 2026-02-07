@@ -2,9 +2,16 @@ import { sql } from '../client.ts';
 import { z } from 'zod';
 import { Err, Ok, Result } from 'ts-results-es';
 import { logger } from '../../utils/logger.ts';
-import { CharacterEntitySchema } from '../character.ts';
-import { CorporationEntitySchema } from '../corporation.ts';
-import { AllianceEntitySchema } from '../alliance.ts';
+import { CharacterStaticSchema } from '../character.ts';
+import { CorporationStaticSchema } from '../corporation.ts';
+import { AllianceStaticSchema } from '../alliance.ts';
+
+/**
+ * Converts a camelCase string to snake_case.
+ */
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
 
 /**
  * Extracts keys from a Zod object or intersection.
@@ -31,13 +38,12 @@ async function validateTableSchema(tableName: string, schema: z.ZodTypeAny): Pro
     const rows = await sql`SELECT * FROM ${sql(tableName)} LIMIT 0`;
     const dbColumns = rows.columns.map(c => c.name);
     
-    // Get keys from Zod schema
+    // Get keys from Zod schema and convert to snake_case for comparison
     const schemaKeys = [...new Set(getZodKeys(schema))];
+    const expectedColumns = schemaKeys.map(toSnakeCase);
     
-    // We check if all schema keys exist in the database.
-    // Note: Database might have more columns (e.g. internal PG columns), 
-    // but our application layer must find everything it expects.
-    const missingInDb = schemaKeys.filter(k => !dbColumns.includes(k) && !dbColumns.includes(k.toLowerCase()));
+    // We check if all expected columns exist in the database.
+    const missingInDb = expectedColumns.filter(col => !dbColumns.includes(col));
     
     if (missingInDb.length > 0) {
       return Err(new Error(`Table '${tableName}' is missing columns expected by Zod schema: ${missingInDb.join(', ')}`));
@@ -55,12 +61,12 @@ async function validateTableSchema(tableName: string, schema: z.ZodTypeAny): Pro
 export async function runAlignmentGuards(): Promise<Result<void, Error>> {
   logger.info('DB', 'Running Zod alignment guards...');
 
-  // Note: We check against the _static tables where the primary entity lives.
+  // We check against the _static tables where the primary entity lives.
   // The alignment guard ensures that the base columns we expect are there.
   const checks = [
-    { name: 'character_static', schema: CharacterEntitySchema },
-    { name: 'corporation_static', schema: CorporationEntitySchema },
-    { name: 'alliance_static', schema: AllianceEntitySchema },
+    { name: 'character_static', schema: CharacterStaticSchema },
+    { name: 'corporation_static', schema: CorporationStaticSchema },
+    { name: 'alliance_static', schema: AllianceStaticSchema },
   ];
 
   for (const check of checks) {
