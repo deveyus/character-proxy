@@ -14,6 +14,7 @@
 
 - **Resource Management:** Balance data freshness with ESI rate-limit conservation. Avoid redundant API calls that could be better utilized for the discovery/crawling engine.
 - **Smart Retries:** Implement **Exponential Backoff** for all ESI interactions to respect API health.
+- **Intelligent Prioritization:** Utilize a non-linear priority formula—weighting time exponentially and user demand logarithmically—to ensure critical data remains fresh while eventually guaranteeing that all known entities are crawled.
 - **Resilience:** In the event of ESI downtime, serve cached data (Graceful Degradation) while explicitly marking the response as stale.
 
 ## User Interface (Management Frontend)
