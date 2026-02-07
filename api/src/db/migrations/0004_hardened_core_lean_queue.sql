@@ -1,1 +1,0 @@
-ALTER TABLE "discovery_queue" DROP COLUMN "status";

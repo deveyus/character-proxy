@@ -1,7 +1,8 @@
 import postgres from 'postgres';
-import { dirname, fromFileUrl, join } from 'std/path/mod.ts';
 import { Err, Ok, Result } from 'ts-results-es';
 import { logger } from '../utils/logger.ts';
+import { runMigrations } from './migrations/runner.ts';
+import { migration as v1 } from './migrations/001_grand_baseline.ts';
 
 // Configuration
 const DB_NAME = 'character_proxy';
@@ -19,58 +20,28 @@ export const sql = connectionString
     max: MAX_POOL_SIZE,
   });
 
+// deno-lint-ignore no-explicit-any
+export const db = sql as any;
+
 /**
- * Migration runner using Raw SQL.
- * IMPLEMENTS "NUKE-AND-REPLACE" STRATEGY.
+ * Ensures the database exists and all migrations are applied.
+ * This should be called at application startup.
  */
 export async function initializeDatabase(): Promise<Result<void, Error>> {
   const dbResult = await ensureDatabaseExists();
   if (dbResult.isErr()) return dbResult;
 
-  const __dirname = dirname(fromFileUrl(import.meta.url));
-  const migrationsFolder = join(__dirname, 'migrations');
+  logger.info('DB', 'Initializing database schema...');
 
-  logger.info('DB', 'RESETTING DATABASE (Nuke-and-Replace)...');
+  // In a real multi-file system, we'd dynamic import these, 
+  // but for now we list them explicitly.
+  const migrations = [v1];
 
-  try {
-    // 1. Nuke existing schema
-    await sql`DROP SCHEMA public CASCADE`;
-    await sql`CREATE SCHEMA public`;
-    await sql`GRANT ALL ON SCHEMA public TO public`;
+  const migrationResult = await runMigrations(migrations);
+  if (migrationResult.isErr()) return migrationResult;
 
-    // 2. List all .sql files in the migrations directory
-    const files = [];
-    for await (const entry of Deno.readDir(migrationsFolder)) {
-      if (entry.isFile && entry.name.endsWith('.sql')) {
-        files.push(entry.name);
-      }
-    }
-
-    // Sort files to ensure they run in order (0000, 0001, etc.)
-    files.sort();
-
-    // 3. Execute each migration file
-    for (const file of files) {
-      const content = await Deno.readTextFile(join(migrationsFolder, file));
-      logger.info('DB', `Applying migration: ${file}`);
-      // Migration files from Drizzle might contain multiple statements
-      // postgres.js unsafe() can handle multiple statements if separated by semicolons
-      await sql.unsafe(content);
-    }
-
-    // 4. Manually ensure constraints that might be missing from Drizzle's initial .sql files
-    // (Drizzle sometimes handles PKs via internal metadata instead of explicit SQL in early migrations)
-    try {
-      await sql`ALTER TABLE discovery_queue ADD PRIMARY KEY (entity_id, entity_type)`;
-    } catch (err) {
-      logger.info('DB', `Note: Could not add PK to discovery_queue (might already exist): ${(err as Error).message}`);
-    }
-
-    logger.info('DB', 'Database initialized and schema up-to-date.');
-    return Ok(undefined);
-  } catch (error) {
-    return Err(error instanceof Error ? error : new Error(String(error)));
-  }
+  logger.info('DB', 'Database initialization complete.');
+  return Ok(undefined);
 }
 
 async function ensureDatabaseExists(): Promise<Result<void, Error>> {
@@ -105,7 +76,7 @@ async function ensureDatabaseExists(): Promise<Result<void, Error>> {
 if (import.meta.main) {
   const result = await initializeDatabase();
   if (result.isErr()) {
-    logger.error('DB', `Migration failed: ${result.error.message}`, { error: result.error });
+    logger.error('DB', `Initialization failed: ${result.error.message}`, { error: result.error });
     Deno.exit(1);
   }
   await sql.end();
