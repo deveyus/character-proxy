@@ -16,10 +16,11 @@
 
 - **Database:** **PostgreSQL**.
   - **Rationale:** Selected for its robust relational data modeling capabilities (essential for the complex Character -> Corp -> Alliance graph) and concurrent write handling.
-- **ORM & Schema Management:** **Drizzle ORM**.
-  - **Usage:** Used for schema definition, type-safe SQL query generation, and migrations.
-  - **Constraint:** Data is structured into SQL tables upon ingestion. **JSONB is explicitly avoided** to ensure efficient indexing and querying.
-- **Migrations:** Managed via **Drizzle Kit**.
+- **SQL Execution:** **Raw SQL (`postgres.js`)**.
+  - **Usage:** Used for all database interactions to ensure maximum performance and clarity. Queries are written in idiomatic SQL.
+- **Data Validation & Typing:** **Zod**.
+  - **Usage:** All rows returned from the database are validated against Zod schemas. These schemas serve as the single source of truth for TypeScript types across the application.
+  - **Constraint:** Data is structured into SQL tables upon ingestion. **JSONB is explicitly avoided** for entity data to ensure efficient indexing and querying, though it may be used for internal system state.
 
 ## Infrastructure & Tooling
 
