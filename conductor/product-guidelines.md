@@ -9,6 +9,7 @@
 - **Ledger-Based History:** Separate static data from dynamic data. Only store entries when a change is detected.
 - **Infinite Retention:** Due to the relatively low frequency of entity changes (Characters, Corps, Alliances), maintain a permanent record of all historical state transitions.
 - **Efficiency:** Prioritize storage patterns that minimize redundancy while preserving the full historical audit trail.
+- **Tombstoning:** Formally track the dissolution of entities (deletion, closure, or termination) using a `terminated_at` field. This transforms system errors (404s) into domain knowledge for known entities.
 
 ## Performance & Reliability
 
