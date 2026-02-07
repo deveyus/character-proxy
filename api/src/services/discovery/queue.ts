@@ -74,6 +74,14 @@ export async function claimTask() {
 }
 
 /**
+ * Returns the number of items currently in the queue.
+ */
+export async function getQueueDepth(): Promise<number> {
+  const rows = await sql`SELECT COUNT(*) as count FROM discovery_queue`;
+  return Number(rows[0].count);
+}
+
+/**
  * Deletes a completed item from the queue.
  */
 export async function markAsCompleted(entityId: number, entityType: EntityType): Promise<void> {
