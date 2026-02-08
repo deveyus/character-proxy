@@ -1,0 +1,8 @@
+{
+  "id": "release_pipeline_20260207",
+  "name": "Release Pipeline",
+  "type": "feature",
+  "status": "in_progress",
+  "created": "2026-02-07",
+  "description": "Establish a CI/CD pipeline to publish OCI images to GHCR and prepare application configuration for production deployment."
+}

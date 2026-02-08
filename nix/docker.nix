@@ -1,6 +1,6 @@
 { dockerTools, deno, character-proxy-src }:
 
-dockerTools.buildLayeredImage {
+dockerTools.streamLayeredImage {
   name = "character-proxy";
   tag = "latest";
 
@@ -27,5 +27,10 @@ dockerTools.buildLayeredImage {
       "WORKER_COUNT=1"
       "LOG_FORMAT=json"
     ];
+    Labels = {
+      "org.opencontainers.image.source" = "https://github.com/deveyus/character-proxy";
+      "org.opencontainers.image.description" = "Resilient enriched cache and discovery engine for EVE Online";
+      "org.opencontainers.image.licenses" = "MIT";
+    };
   };
 }
