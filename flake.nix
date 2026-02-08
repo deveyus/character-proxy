@@ -10,8 +10,17 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
+        character-proxy-src = pkgs.callPackage ./nix/build.nix { };
       in
       {
+        packages = {
+          default = character-proxy-src;
+          container = pkgs.callPackage ./nix/docker.nix {
+            inherit character-proxy-src;
+            deno = pkgs.deno;
+          };
+        };
+
         devShells.default = pkgs.mkShell {
           buildInputs = with pkgs; [
             gemini-cli

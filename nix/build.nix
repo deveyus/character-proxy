@@ -13,6 +13,6 @@ stdenv.mkDerivation {
 
   meta = with lib; {
     description = "Character Proxy source files for containerization";
-    license = licenses.unfree;
+    license = licenses.mit;
   };
 }
