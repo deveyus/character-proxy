@@ -1,4 +1,4 @@
-import { onDiscoveryEvent, DiscoveryEvent } from './extraction.ts';
+import { DiscoveryEvent, onDiscoveryEvent } from './extraction.ts';
 import { logger } from '../../utils/logger.ts';
 
 /**

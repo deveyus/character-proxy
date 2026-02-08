@@ -10,7 +10,11 @@ import { startDiscoveryWorker } from './services/discovery/worker.ts';
 import { initializeLimiter } from './clients/esi_limiter.ts';
 import { startMaintenanceWorker } from './services/discovery/maintenance.ts';
 import { startProber } from './services/discovery/prober.ts';
-import { addSseClient, initializeEventBridge, removeSseClient } from './services/discovery/events.ts';
+import {
+  addSseClient,
+  initializeEventBridge,
+  removeSseClient,
+} from './services/discovery/events.ts';
 
 const PORT = parseInt(Deno.env.get('PORT') || '4321');
 

@@ -7,17 +7,18 @@
 - **Error Handling:** **Result Pattern (`ts-results-es`)**. All functions that can fail must return a `Result<T, E>` or `AsyncResult<T, E>`. Use of `try-catch` blocks is discouraged in favor of explicit error propagation and functional handling.
 
 ## API & Communication
- 
+
 - **Web Server:** **Hono**. Used as the primary web application framework for serving the dashboard, tRPC API, and real-time event streams.
 - **Real-Time Updates:** **Server-Sent Events (SSE)**. Used to broadcast discovery and system events from the backend to the dashboard without the overhead of WebSockets.
 - **API Framework:** **tRPC**. Used for end-to-end type safety between the Deno backend and any consumers (internal or external).
- 
+
 +## Frontend & Observability
 +
 +- **Component Model:** **Lit**. Used for building lightweight, reactive Web Components for the management dashboard. Leverages standard JavaScript template literals instead of JSX.
 +- **Styling:** **Design Token Driven CSS**. Utilizes global CSS Custom Properties for theme consistency and scoped component styles for encapsulation.
 +
- ## Data Persistence
+
+## Data Persistence
 
 - **Database:** **PostgreSQL**.
   - **Rationale:** Selected for its robust relational data modeling capabilities (essential for the complex Character -> Corp -> Alliance graph) and concurrent write handling.

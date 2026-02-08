@@ -1,8 +1,0 @@
-{
-  "track_id": "oci_containerization_20260208",
-  "type": "feature",
-  "status": "new",
-  "created_at": "2026-02-08T00:30:00Z",
-  "updated_at": "2026-02-08T00:30:00Z",
-  "description": "Implement a production-grade containerization pipeline using Nix to produce a lean, distroless OCI image for the Character Proxy service, using granular Deno permissions."
-}

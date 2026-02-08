@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { css, html, LitElement } from 'lit';
 
 // --- ESI Budget Component ---
 class EsiBudget extends LitElement {
@@ -16,7 +16,9 @@ class EsiBudget extends LitElement {
   }
 
   static styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .gauge {
       height: 1.5rem;
       background: #334155;
@@ -28,19 +30,27 @@ class EsiBudget extends LitElement {
       height: 100%;
       transition: width 0.5s ease, background-color 0.5s ease;
     }
-    .status { font-weight: bold; }
-    .up { color: var(--color-success); }
-    .degraded { color: var(--color-warning); }
-    .down { color: var(--color-error); }
+    .status {
+      font-weight: bold;
+    }
+    .up {
+      color: var(--color-success);
+    }
+    .degraded {
+      color: var(--color-warning);
+    }
+    .down {
+      color: var(--color-error);
+    }
   `;
 
   connectedCallback() {
     super.connectedCallback();
     this.fetchData();
-    
+
     // Listen for SSE events
     globalThis.addEventListener('sse-event', () => {
-      this.fetchData(); 
+      this.fetchData();
     });
   }
 
@@ -67,7 +77,8 @@ class EsiBudget extends LitElement {
 
     return html`
       <h2 class="card-title">ESI Error Budget</h2>
-      <div class="status">Health: <span class="${this.health}">${this.health.toUpperCase()}</span></div>
+      <div class="status">Health: <span class="${this.health}">${this.health
+        .toUpperCase()}</span></div>
       <div class="gauge">
         <div class="fill" style="width: ${percentage}%; background-color: ${color}"></div>
       </div>
@@ -90,14 +101,18 @@ class WorkerStatus extends LitElement {
   }
 
   static styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .worker {
       display: flex;
       justify-content: space-between;
       padding: 0.5rem 0;
       border-bottom: 1px solid #334155;
     }
-    .worker:last-child { border-bottom: none; }
+    .worker:last-child {
+      border-bottom: none;
+    }
     .pulse {
       width: 8px;
       height: 8px;
@@ -129,15 +144,23 @@ class WorkerStatus extends LitElement {
   render() {
     return html`
       <h2 class="card-title">Worker Pulse</h2>
-      ${this.workers.length === 0 ? html`<p>No active workers found.</p>` : ''}
-      ${this.workers.map(w => html`
-        <div class="worker">
-          <span><span class="pulse"></span>${w.key.replace('heartbeat_worker_', 'Worker #')}</span>
-          <span style="font-size: 0.8rem; color: var(--color-text-muted)">
-            ${new Date(w.updatedAt).toLocaleTimeString()}
-          </span>
-        </div>
-      `)}
+      ${this.workers.length === 0
+        ? html`
+          <p>No active workers found.</p>
+        `
+        : ''} ${this.workers.map((w) =>
+          html`
+            <div class="worker">
+              <span><span class="pulse"></span>${w.key.replace(
+                'heartbeat_worker_',
+                'Worker #',
+              )}</span>
+              <span style="font-size: 0.8rem; color: var(--color-text-muted)">
+                ${new Date(w.updatedAt).toLocaleTimeString()}
+              </span>
+            </div>
+          `
+        )}
     `;
   }
 }
@@ -157,7 +180,9 @@ class QueueMonitor extends LitElement {
   }
 
   static styles = css`
-    :host { display: block; }
+    :host {
+      display: block;
+    }
     .stat {
       font-size: 2rem;
       font-weight: bold;
