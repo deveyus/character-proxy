@@ -18,3 +18,4 @@ This is a service used by other tools to access the Eve Online API; acting as an
 
 - **Primary Stack:** TypeScript (Full Stack).
 - **API Layer:** **tRPC**. Chosen for its end-to-end type safety and developer experience, bridging the backend and frontend without the complexity of gRPC or the boilerplate of manual REST specifications.
+- **Management Dashboard:** A real-time, responsive observability layer powered by **Hono**, **Lit**, and **Server-Sent Events (SSE)** for monitoring system health and discovery progress.
