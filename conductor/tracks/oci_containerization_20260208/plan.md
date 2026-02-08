@@ -12,12 +12,12 @@
 - [x] Task: Build OCI Image 898c5ac
     - [x] Update `flake.nix` to add a `packages.container` output.
     - [x] Run `nix build .#container`.
-- [ ] Task: Verification via Podman
-    - [ ] Load the image: `podman load < result`.
-    - [ ] Run the container with dummy environment variables.
-    - [ ] Verify HTTP connectivity and permission stability.
+- [x] Task: Verification via Podman 85b1460
+    - [x] Load the image: `podman load < result`. (Confirmed via user sudo)
+    - [x] Run the container with dummy environment variables.
+    - [x] Verify HTTP connectivity and permission stability.
 
 ## Phase 3: Final Polishing
-- [ ] Task: Project audit
-    - [ ] Run `deno check`.
-    - [ ] Run `deno lint`.
+- [x] Task: Project audit 259493
+    - [x] Run `deno check`.
+    - [x] Run `deno lint`.
