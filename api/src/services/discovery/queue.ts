@@ -1,5 +1,6 @@
 import { sql } from '../../db/client.ts';
 import { Err, Ok, Result } from 'ts-results-es';
+import { emitDiscoveryEvent } from './extraction.ts';
 
 /**
  * Supported entity types for the discovery queue.
@@ -15,7 +16,7 @@ const LOCK_DURATION_MS = 5 * 60 * 1000; // 5 minutes
  * Adds an entity to the discovery queue for eventual crawling.
  *
  * Side-Effects: Performs a database INSERT into `discovery_queue` with
- * ON CONFLICT DO NOTHING.
+ * ON CONFLICT DO NOTHING. Emits a `queue_updated` event on success.
  *
  * @param {number} entityId - The EVE ID of the target entity.
  * @param {EntityType} entityType - The category of the entity.
@@ -26,11 +27,17 @@ export async function addToQueue(
   entityType: EntityType,
 ): Promise<Result<void, Error>> {
   try {
-    await sql`
+    const res = await sql`
       INSERT INTO discovery_queue (entity_id, entity_type)
       VALUES (${entityId}, ${entityType})
       ON CONFLICT (entity_id, entity_type) DO NOTHING
     `;
+
+    // Only emit if a row was actually inserted
+    if (res.count > 0) {
+      emitDiscoveryEvent('queue_updated', entityId);
+    }
+
     return Ok(void 0);
   } catch (error) {
     const err = error instanceof Error ? error : new Error(String(error));

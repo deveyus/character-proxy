@@ -2,6 +2,7 @@ import {
   canFetch,
   FetchPriority,
   getApiHealth,
+  refreshLimiterState,
   updateApiHealth,
   updateLimits,
 } from './esi_limiter.ts';
@@ -63,7 +64,13 @@ async function fetchOnce<T>(
   path: string,
   etag?: string | null,
   priority: FetchPriority = 'user',
+  method = 'GET',
+  body?: unknown,
 ): Promise<ESIResponse<T>> {
+  if (priority === 'background') {
+    await refreshLimiterState();
+  }
+
   if (!canFetch(priority)) {
     metrics.inc('esi_errors_total');
     return {
@@ -78,8 +85,15 @@ async function fetchOnce<T>(
     if (etag) {
       headers['If-None-Match'] = etag;
     }
+    if (method === 'POST') {
+      headers['Content-Type'] = 'application/json';
+    }
 
-    const response = await fetch(`${ESI_BASE_URL}${path}`, { headers });
+    const response = await fetch(`${ESI_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
     metrics.inc('esi_requests_total');
 
     // Update limits from headers
@@ -144,6 +158,8 @@ export async function fetchEntity<T>(
   path: string,
   etag?: string | null,
   priority: FetchPriority = 'user',
+  method = 'GET',
+  body?: unknown,
 ): Promise<ESIResponse<T>> {
   const maxRetries = 3;
   let lastResult: ESIResponse<T> | null = null;
@@ -157,7 +173,7 @@ export async function fetchEntity<T>(
       };
     }
 
-    const res = await fetchOnce<T>(path, etag, priority);
+    const res = await fetchOnce<T>(path, etag, priority, method, body);
 
     if (res.status !== 'error') {
       return res;

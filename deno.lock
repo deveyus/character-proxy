@@ -1,6 +1,7 @@
 {
   "version": "5",
   "specifiers": {
+    "jsr:@hono/hono@^4.4.7": "4.11.8",
     "npm:@trpc/client@^10.45.2": "10.45.4_@trpc+server@10.45.4",
     "npm:@trpc/server@^10.45.2": "10.45.4",
     "npm:postgres@^3.4.5": "3.4.8",
@@ -8,6 +9,11 @@
     "npm:uuidv7@*": "1.1.0",
     "npm:uuidv7@^1.1.0": "1.1.0",
     "npm:zod@^3.23.8": "3.25.76"
+  },
+  "jsr": {
+    "@hono/hono@4.11.8": {
+      "integrity": "838279da7b64dd7d4d9753216746d4d1017090ef6c087c72755cb1999521bd2e"
+    }
   },
   "npm": {
     "@trpc/client@10.45.4_@trpc+server@10.45.4": {
@@ -177,6 +183,7 @@
   },
   "workspace": {
     "dependencies": [
+      "jsr:@hono/hono@^4.4.7",
       "npm:@trpc/client@^10.45.2",
       "npm:@trpc/server@^10.45.2",
       "npm:postgres@^3.4.5",

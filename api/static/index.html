@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Proxy Management</title>
+    <link rel="stylesheet" href="/static/theme.css">
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "https://esm.run/lit@3.1.2",
+          "lit/decorators.js": "https://esm.run/lit@3.1.2/decorators.js"
+        }
+      }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Proxy Management Dashboard</h1>
+    </header>
+
+    <main class="dashboard-grid">
+        <esi-budget class="card"></esi-budget>
+        <worker-status class="card"></worker-status>
+        <queue-monitor class="card"></queue-monitor>
+    </main>
+
+    <script type="module" src="/static/app.js"></script>
+</body>
+</html>

@@ -9,6 +9,7 @@
   },
   "imports": {
     "std/": "https://deno.land/std@0.224.0/",
+    "hono": "jsr:@hono/hono@^4.4.7",
     "postgres": "npm:postgres@^3.4.5",
     "@trpc/server": "npm:@trpc/server@^10.45.2",
     "@trpc/client": "npm:@trpc/client@^10.45.2",

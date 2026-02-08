@@ -1,4 +1,6 @@
 import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
+import { Hono } from 'hono';
+import { serveStatic } from 'hono/deno';
 import { appRouter } from './trpc/router.ts';
 import { createTRPCContext } from './trpc/context.ts';
 import { initializeDatabase, sql } from './db/client.ts';
@@ -8,6 +10,7 @@ import { startDiscoveryWorker } from './services/discovery/worker.ts';
 import { initializeLimiter } from './clients/esi_limiter.ts';
 import { startMaintenanceWorker } from './services/discovery/maintenance.ts';
 import { startProber } from './services/discovery/prober.ts';
+import { addSseClient, initializeEventBridge, removeSseClient } from './services/discovery/events.ts';
 
 const PORT = parseInt(Deno.env.get('PORT') || '4321');
 
@@ -56,14 +59,60 @@ async function startServer() {
     logger.error('SYSTEM', 'Gap Prober crashed', { error: err });
   });
 
-  Deno.serve({ port: PORT }, (req) => {
+  // Initialize SSE bridge
+  initializeEventBridge();
+
+  const app = new Hono();
+
+  // Logging middleware
+  app.use('*', async (c, next) => {
+    const start = Date.now();
+    await next();
+    const duration = Date.now() - start;
+    logger.debug('SYSTEM', `${c.req.method} ${c.req.url} - ${c.res.status} (${duration}ms)`);
+  });
+
+  // Serve static files from api/static
+  app.use('/static/*', serveStatic({ root: './api/' }));
+
+  // Mount tRPC
+  app.all('/trpc/*', (c) => {
     return fetchRequestHandler({
       endpoint: '/trpc',
-      req,
+      req: c.req.raw,
       router: appRouter,
       createContext: createTRPCContext,
     });
   });
+
+  // Basic index redirect or shell
+  app.get('/', (c) => {
+    return c.redirect('/static/index.html');
+  });
+
+  // SSE Event Stream
+  app.get('/api/events', (_c) => {
+    let sseController: ReadableStreamDefaultController;
+    const stream = new ReadableStream({
+      start(controller) {
+        sseController = controller;
+        addSseClient(sseController);
+      },
+      cancel() {
+        if (sseController) removeSseClient(sseController);
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+      },
+    });
+  });
+
+  Deno.serve({ port: PORT }, app.fetch);
 
   logger.info('SYSTEM', `API server listening on http://localhost:${PORT}`);
 }

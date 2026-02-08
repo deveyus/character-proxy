@@ -9,6 +9,7 @@ import { sql } from '../../db/client.ts';
 
 import { metrics } from '../../utils/metrics.ts';
 import { setState } from '../../db/system_state.ts';
+import { onDiscoveryEvent } from './extraction.ts';
 
 /**
  * Supported entity types for the discovery worker.
@@ -22,8 +23,7 @@ const HEARTBEAT_INTERVAL_MS = 60 * 1000;
  * Orchestrates the processing of a single task from the discovery queue.
  *
  * Logic:
- * 1. Claims a task using `claimTask()`.
- * 2. Resolves the entity via the appropriate service (e.g., `characterService`).
+ * 1. Claims a task using `claimTask()`.n * 2. Resolves the entity via the appropriate service (e.g., `characterService`).
  * 3. Handles successful resolution by deleting the task.
  * 4. Categorizes errors (404, transient, poison pill) and updates queue state accordingly.
  *
@@ -114,7 +114,8 @@ export async function processQueueItem(): Promise<Result<boolean, Error>> {
 }
 
 /**
- * Starts a background discovery worker loop.
+ * Background loop for processing the discovery queue.
+ * Uses event-driven signaling to respond instantly to new tasks.
  *
  * Side-Effects: Periodically persists heartbeat state to `system_state`.
  *
@@ -124,6 +125,15 @@ export async function startDiscoveryWorker(workerId = 0) {
   logger.info('SYSTEM', `Discovery worker ${workerId} started.`);
 
   let lastHeartbeat = 0;
+  let wakeupSignal: (() => void) | null = null;
+
+  // Wake up worker when queue is updated
+  onDiscoveryEvent('queue_updated', () => {
+    if (wakeupSignal) {
+      wakeupSignal();
+      wakeupSignal = null;
+    }
+  });
 
   while (true) {
     // Send heartbeat
@@ -146,12 +156,20 @@ export async function startDiscoveryWorker(workerId = 0) {
     }
 
     if (result.value === false) {
-      // No items, sleep for a bit
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      // No items or ESI down, wait for signal or 30s timeout
+      await new Promise<void>((resolve) => {
+        wakeupSignal = resolve;
+        setTimeout(() => {
+          if (wakeupSignal) {
+            wakeupSignal();
+            wakeupSignal = null;
+          }
+        }, 30000);
+      });
       continue;
     }
 
-    // Processed an item, small delay to avoid hammering
+    // Processed an item, small delay to avoid hammering local resources
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 }

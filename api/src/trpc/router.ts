@@ -76,7 +76,7 @@ export const appRouter = router({
       return { success: true };
     }),
 
-  getSystemStatus: protectedProcedure.query(async () => {
+  getSystemStatus: publicProcedure.query(async () => {
     const result = await systemService.getSystemStatus();
     if (result.isErr()) {
       throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: result.error.message });

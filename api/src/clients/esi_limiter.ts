@@ -33,6 +33,23 @@ let lastHealthCheck = 0;
  * Should be called during application bootstrap.
  */
 export async function initializeLimiter() {
+  const result = await refreshLimiterState();
+  if (result) {
+    logger.info('ESI', 'Loaded persistent limiter state', {
+      remain: errorLimitRemain,
+      health: apiHealth,
+    });
+  }
+}
+
+/**
+ * Re-reads the limiter state from the database.
+ * Used by background workers to ensure they stay synchronized with other instances.
+ *
+ * Performance: Low -- DB Read
+ * @returns {Promise<boolean>} True if the state was successfully refreshed.
+ */
+export async function refreshLimiterState(): Promise<boolean> {
   const stateResult = await getState<{
     remain: number;
     reset: number;
@@ -46,11 +63,9 @@ export async function initializeLimiter() {
     errorLimitReset = s.reset;
     apiHealth = s.health;
     lastUpdate = s.lastUpdate;
-    logger.info('ESI', 'Loaded persistent limiter state', {
-      remain: errorLimitRemain,
-      health: apiHealth,
-    });
+    return true;
   }
+  return false;
 }
 
 /**

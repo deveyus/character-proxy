@@ -3,9 +3,9 @@ import { getHWM } from './frontier.ts';
 import { addToQueue, getQueueDepth } from './queue.ts';
 import { getState, setState } from '../../db/system_state.ts';
 import { logger } from '../../utils/logger.ts';
+import { fetchEntity } from '../../clients/esi.ts';
 
 const PROBE_BLOCK_SIZE = 1000;
-const ESI_BASE_URL = 'https://esi.evetech.net/latest';
 
 /**
  * Validates a list of EVE IDs using the bulk name lookup endpoint.
@@ -14,32 +14,32 @@ const ESI_BASE_URL = 'https://esi.evetech.net/latest';
  * ESI: /universe/names/
  *
  * @param {number[]} ids - List of up to 1000 IDs to probe.
- * @returns {Promise<number[]>} The subset of IDs that correspond to valid discoverable entities.
+ * @returns {Promise<Array<{ id: number; category: "character" | "corporation" | "alliance" }>>} Valid discovered entities.
  */
-async function probeIds(ids: number[]): Promise<number[]> {
+async function probeIds(
+  ids: number[],
+): Promise<Array<{ id: number; category: 'character' | 'corporation' | 'alliance' }>> {
   if (ids.length === 0) return [];
 
-  try {
-    const response = await fetch(`${ESI_BASE_URL}/universe/names/`, {
-      method: 'POST',
-      body: JSON.stringify(ids),
-      headers: { 'Content-Type': 'application/json' },
-    });
+  const res = await fetchEntity<Array<{ id: number; category: string }>>(
+    '/universe/names/',
+    null,
+    'background',
+    'POST',
+    ids,
+  );
 
-    if (!response.ok) {
-      logger.warn('ESI', `Bulk probe failed: ${response.status} ${response.statusText}`);
-      return [];
-    }
-
-    const data = await response.json() as Array<{ id: number; category: string }>;
-    // We only care about characters, corporations, and alliances for now
-    return data
-      .filter((item) => ['character', 'corporation', 'alliance'].includes(item.category))
-      .map((item) => item.id);
-  } catch (err) {
-    logger.error('ESI', 'Bulk probe exception', { error: err });
+  if (res.status !== 'fresh') {
     return [];
   }
+
+  // We only care about characters, corporations, and alliances for now
+  return res.data
+    .filter((item) => ['character', 'corporation', 'alliance'].includes(item.category))
+    .map((item) => ({
+      id: item.id,
+      category: item.category as 'character' | 'corporation' | 'alliance',
+    }));
 }
 
 /**
@@ -71,12 +71,9 @@ export async function runProberStep() {
       'SYSTEM',
       `Probing internal gap: ${targetIds[0]} to ${targetIds[targetIds.length - 1]}`,
     );
-    const validIds = await probeIds(targetIds);
-    for (const id of validIds) {
-      // We don't know the type from /universe/names/ without extra checking,
-      // but addToQueue handles collisions and the worker will resolve the actual type.
-      // For now, we assume it's the type of the table we found the gap in.
-      await addToQueue(id, 'character');
+    const discovered = await probeIds(targetIds);
+    for (const item of discovered) {
+      await addToQueue(item.id, item.category);
     }
     return;
   }
@@ -98,9 +95,9 @@ export async function runProberStep() {
       'SYSTEM',
       `Probing frontier: ${targetIds[0]} to ${targetIds[targetIds.length - 1]}`,
     );
-    const validIds = await probeIds(targetIds);
-    for (const id of validIds) {
-      await addToQueue(id, 'character');
+    const discovered = await probeIds(targetIds);
+    for (const item of discovered) {
+      await addToQueue(item.id, item.category);
     }
 
     const newLastId = targetIds[targetIds.length - 1];

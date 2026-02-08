@@ -19,7 +19,11 @@ import { logger } from '../../utils/logger.ts';
 /**
  * Valid event types for notifying completion of entity discovery steps.
  */
-export type DiscoveryEvent = 'character_extracted' | 'corporation_extracted' | 'alliance_extracted';
+export type DiscoveryEvent =
+  | 'character_extracted'
+  | 'corporation_extracted'
+  | 'alliance_extracted'
+  | 'queue_updated';
 
 /**
  * Signature for discovery event callbacks.
@@ -51,9 +55,12 @@ export function offDiscoveryEvent(event: DiscoveryEvent, cb: DiscoveryCallback) 
 }
 
 /**
- * Internal helper to broadcast discovery completion.
+ * Broadcasts a discovery event to all registered listeners.
+ *
+ * @param {DiscoveryEvent} event - The event to broadcast.
+ * @param {number} id - The EVE ID associated with the event.
  */
-function emit(event: DiscoveryEvent, id: number) {
+export function emitDiscoveryEvent(event: DiscoveryEvent, id: number) {
   listeners.get(event)?.forEach((cb) => cb(id));
 }
 
@@ -122,7 +129,7 @@ export async function extractFromCharacter(id: number, rawData: unknown): Promis
       WHERE character_id = ${id}
     `;
   } finally {
-    emit('character_extracted', id);
+    emitDiscoveryEvent('character_extracted', id);
   }
 }
 
@@ -181,7 +188,7 @@ export async function extractFromCorporation(
       WHERE corporation_id = ${id}
     `;
   } finally {
-    emit('corporation_extracted', id);
+    emitDiscoveryEvent('corporation_extracted', id);
   }
 }
 
@@ -236,6 +243,6 @@ export async function extractFromAlliance(id: number, rawData: unknown): Promise
       WHERE alliance_id = ${id}
     `;
   } finally {
-    emit('alliance_extracted', id);
+    emitDiscoveryEvent('alliance_extracted', id);
   }
 }
