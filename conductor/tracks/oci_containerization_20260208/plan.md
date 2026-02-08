@@ -4,9 +4,9 @@
 - [x] Task: Create Build Derivations b53576a
     - [x] Create `nix/build.nix` to define the application source derivation.
     - [x] Create `nix/docker.nix` to define the OCI image using `dockerTools`.
-- [ ] Task: Define Granular Permissions
-    - [ ] Identify and document every environment variable and network host required for production.
-    - [ ] Configure the OCI `Entrypoint` with specific `--allow-*` flags.
+- [x] Task: Define Granular Permissions 2796ba8
+    - [x] Identify and document every environment variable and network host required for production.
+    - [x] Configure the OCI `Entrypoint` with specific `--allow-*` flags.
 
 ## Phase 2: Image Production & Verification
 - [ ] Task: Build OCI Image
