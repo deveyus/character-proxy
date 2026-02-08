@@ -10,11 +10,22 @@ dockerTools.buildLayeredImage {
   ];
 
   config = {
-    # Entrypoint will be refined in the next task
-    Entrypoint = [ "deno" "run" ];
+    Entrypoint = [
+      "deno"
+      "run"
+      "--allow-net" # Required for ESI, Database, and Server Binding
+      "--allow-env=PORT,WORKER_COUNT,DATABASE_URL,MASTER_KEY,LOG_FORMAT"
+      "--allow-read=/app"
+      "/app/api/src/main.ts"
+    ];
     WorkingDir = "/app";
     ExposedPorts = {
       "4321/tcp" = { };
     };
+    Env = [
+      "PORT=4321"
+      "WORKER_COUNT=1"
+      "LOG_FORMAT=json"
+    ];
   };
 }
