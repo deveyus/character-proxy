@@ -21,4 +21,4 @@
 ## Phase 4: Finalization
 
 - [x] **Documentation:** Update `README.md` to include badge/link to the container package. 1745926
-- [x] **Checkpoint:** Commit all changes and verify the Action runs successfully on GitHub. 1745926
+- [x] **Checkpoint:** Commit all changes and verify the Action runs successfully on GitHub. f7ae423
