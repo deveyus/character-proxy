@@ -9,9 +9,9 @@
     - [x] Configure the OCI `Entrypoint` with specific `--allow-*` flags.
 
 ## Phase 2: Image Production & Verification
-- [ ] Task: Build OCI Image
-    - [ ] Update `flake.nix` to add a `packages.container` output.
-    - [ ] Run `nix build .#container`.
+- [x] Task: Build OCI Image 898c5ac
+    - [x] Update `flake.nix` to add a `packages.container` output.
+    - [x] Run `nix build .#container`.
 - [ ] Task: Verification via Podman
     - [ ] Load the image: `podman load < result`.
     - [ ] Run the container with dummy environment variables.
