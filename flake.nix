@@ -28,9 +28,11 @@
             nodejs
             deno
             postgresql
+            zip
           ];
 
           shellHook = ''
+            export ANTIGRAVITY_CLI_ALIAS=antigravity
             echo "Welcome to the Character Proxy dev shell!"
             if [ -z "$GEMINI_API_KEY" ]; then
               echo "⚠️  Warning: GEMINI_API_KEY is not set. The gemini cli may not work."
